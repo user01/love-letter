@@ -9,9 +9,10 @@ from player import Player
 class Game():
     """A Love Letter Game"""
 
-    def __init__(self, deck, players):
+    def __init__(self, deck, players, player_turn):
         self._deck = deck
         self._players = players
+        self._player_turn = player_turn
 
     def players(self):
         """List of current players."""
@@ -26,4 +27,4 @@ class Game():
         undealt_cards = deck[player_count:]
 
         players = list(map(lambda x: Player(x, []), dealt_cards))
-        return Game(undealt_cards, players)
+        return Game(undealt_cards, players, 0)
