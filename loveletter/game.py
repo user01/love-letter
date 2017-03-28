@@ -18,6 +18,18 @@ class Game():
         """List of current players."""
         return self._players[:]
 
+    def deck(self):
+        """List of current cards."""
+        return self._deck[:-1]
+
+    def card_hidden(self):
+        """Cards hidden from play."""
+        return self._deck[-1]
+
+    def player_turn(self):
+        """Player number of current player."""
+        return self._player_turn
+
     @staticmethod
     def new(player_count=4, seed=451):
         """Create a brand new game"""
@@ -26,5 +38,5 @@ class Game():
         dealt_cards = deck[:player_count]
         undealt_cards = deck[player_count:]
 
-        players = list(map(lambda x: Player(x, []), dealt_cards))
+        players = list(map(lambda card: Player(card, []), dealt_cards))
         return Game(undealt_cards, players, 0)
