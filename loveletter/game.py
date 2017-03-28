@@ -3,6 +3,8 @@
 Love Letter Game object
 """
 
+from card import shuffle_deck
+from player import Player
 
 class Game():
     """A Love Letter Game"""
@@ -16,6 +18,12 @@ class Game():
         return self._players[:]
 
     @staticmethod
-    def new(seed=451):
+    def new(player_count=4, seed=451):
         """Create a brand new game"""
-        return seed
+        deck = shuffle_deck(seed)
+
+        dealt_cards = deck[:player_count]
+        undealt_cards = deck[player_count:]
+
+        players = list(map(lambda x: Player(x, []), dealt_cards))
+        return Game(undealt_cards, players)

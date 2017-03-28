@@ -29,12 +29,13 @@ CARD_COUNTS = [5,  # Guard
                1]  # Princess
 
 
-def shuffle_deck():
+def shuffle_deck(seed=451):
     """A numpy array of shuffled cards"""
     deck = []
     for card_number, card_count in enumerate(CARD_COUNTS):
         card_id = card_number + 1
         deck = deck + [card_id] * card_count
     deck_np = np.array(deck)
+    np.random.seed(seed=seed)
     np.random.shuffle(deck_np)
     return deck_np
