@@ -17,10 +17,10 @@ class TestPlayer(unittest.TestCase):
     def test_to_np(self):
         """Player to a numpy array"""
         player = Player(1, [
-            PlayerAction(1, 3, 5),
-            PlayerAction(3, 0, 0)
+            PlayerAction(1, 3, 5, 0),
+            PlayerAction(3, 0, 0, 0)
         ])
-        arr = np.array([1, 1, 3, 5, 3, 0, 0], dtype=np.uint8)
+        arr = np.array([1, 1, 3, 5, 0, 3, 0, 0, 0], dtype=np.uint8)
         arr_res = PlayerTools.to_np(player)
         self.assertEqual(len(arr_res), len(arr))
         self.assertTrue((arr_res == arr).all())
@@ -28,10 +28,10 @@ class TestPlayer(unittest.TestCase):
     def test_from_np(self):
         """Player from a numpy array"""
         player = Player(1, [
-            PlayerAction(1, 3, 5),
-            PlayerAction(3, 0, 0)
+            PlayerAction(1, 3, 5, 0),
+            PlayerAction(3, 0, 0, 2)
         ])
-        arr = np.array([1, 1, 3, 5, 3, 0, 0], dtype=np.uint8)
+        arr = np.array([1, 1, 3, 5, 0, 3, 0, 0, 2], dtype=np.uint8)
         player_res = PlayerTools.from_np(arr)
         self.assertEqual(player_res, player)
 
@@ -41,51 +41,53 @@ class TestPlayerActions(unittest.TestCase):
 
     def test_init(self):
         """Create an action"""
-        action = PlayerAction(1, 3, 5) # play guard, on player 3, guessing Prince
+        action = PlayerAction(1, 3, 5, 0) # play guard, on player 3, guessing Prince, no revealed card
         self.assertEqual(action.discard, 1)
         self.assertEqual(action.player_target, 3)
         self.assertEqual(action.guess, 5)
+        self.assertEqual(action.revealed_card, 0)
 
     def test_to_np(self):
         """Action to a numpy array"""
-        action = PlayerAction(1, 3, 5)
-        arr = np.array([1, 3, 5], dtype=np.uint8)
+        action = PlayerAction(1, 3, 5, 0)
+        arr = np.array([1, 3, 5, 0], dtype=np.uint8)
         self.assertTrue((PlayerActionTools.to_np(action) == arr).all())
 
     def test_from_np(self):
         """Action from a numpy array"""
-        arr = np.array([1, 3, 5], dtype=np.uint8)
+        arr = np.array([1, 3, 5, 0], dtype=np.uint8)
         action = PlayerActionTools.from_np(arr)
         self.assertEqual(action.discard, 1)
         self.assertEqual(action.player_target, 3)
         self.assertEqual(action.guess, 5)
+        self.assertEqual(action.revealed_card, 0)
 
     def test_to_np_many(self):
         """Actions to a numpy array"""
         actions = [
-            PlayerAction(1, 3, 5),
-            PlayerAction(4, 0, 5),
-            PlayerAction(8, 0, 0),
-            PlayerAction(5, 0, 0)
+            PlayerAction(1, 3, 5, 0),
+            PlayerAction(4, 0, 5, 0),
+            PlayerAction(8, 0, 0, 0),
+            PlayerAction(5, 0, 0, 0)
         ]
-        arr = np.array([1, 3, 5,
-                        4, 0, 5,
-                        8, 0, 0,
-                        5, 0, 0], dtype=np.uint8)
+        arr = np.array([1, 3, 5, 0,
+                        4, 0, 5, 0,
+                        8, 0, 0, 0,
+                        5, 0, 0, 0], dtype=np.uint8)
         self.assertTrue((PlayerActionTools.to_np_many(actions) == arr).all())
 
-    def test_from_np(self):
+    def test_from_np_many(self):
         """Action from a numpy array"""
         actions = [
-            PlayerAction(1, 3, 5),
-            PlayerAction(4, 0, 5),
-            PlayerAction(8, 0, 0),
-            PlayerAction(5, 0, 0)
+            PlayerAction(1, 3, 5, 1),
+            PlayerAction(4, 0, 5, 1),
+            PlayerAction(8, 0, 0, 1),
+            PlayerAction(5, 0, 0, 1)
         ]
-        arr = np.array([1, 3, 5,
-                        4, 0, 5,
-                        8, 0, 0,
-                        5, 0, 0], dtype=np.uint8)
+        arr = np.array([1, 3, 5, 1,
+                        4, 0, 5, 1,
+                        8, 0, 0, 1,
+                        5, 0, 0, 1], dtype=np.uint8)
         self.assertListEqual(PlayerActionTools.from_np_many(arr), actions)
 
 

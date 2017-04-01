@@ -14,11 +14,12 @@ import numpy as np
 #  discard - int card id discarded
 #  player_target - int targeted player id
 #  guess - int card guess being made - only useful if discard is 1 (guard), otherwise 0
+#  revealed_card - int card of player_target - only useful if discard is 2 (priest), otherwise 0
 #
 # Note that the discarding player is a valid target and that is the only
 # valid target for the non-effecting cards (ie handmaid or countess)
 PlayerAction = namedtuple(
-    'PlayerAction', 'discard player_target guess')
+    'PlayerAction', 'discard player_target guess revealed_card')
 
 
 class PlayerActionTools():
@@ -27,7 +28,7 @@ class PlayerActionTools():
     @staticmethod
     def from_np(arr):
         """Convert a player action tuple into a numpy array."""
-        return PlayerAction(arr[0], arr[1], arr[2])
+        return PlayerAction(arr[0], arr[1], arr[2], arr[3])
 
     @staticmethod
     def to_np(player_action):
@@ -38,14 +39,14 @@ class PlayerActionTools():
     def from_np_many(player_actions):
         """Convert a player action tuple into a numpy array."""
         actions_split = np.reshape(
-            player_actions, (player_actions.shape[0] // 3, 3))
+            player_actions, (player_actions.shape[0] // 4, 4))
         return list(map(PlayerActionTools.from_np, actions_split))
 
     @staticmethod
     def to_np_many(player_actions):
         """Convert a player action tuple into a numpy array."""
         actions = np.array(player_actions, dtype=np.uint8)
-        return np.reshape(actions, len(player_actions) * 3)
+        return np.reshape(actions, len(player_actions) * 4)
 
 # A Love Letter Player
 #
