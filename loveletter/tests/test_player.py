@@ -2,7 +2,39 @@
 
 import unittest
 import numpy as np
+from loveletter.player import Player, PlayerTools
 from loveletter.player import PlayerAction, PlayerActionTools
+
+class TestPlayer(unittest.TestCase):
+    """Test Player Tools for the Love Letter Game"""
+
+    def test_init(self):
+        """Create a Player"""
+        player = Player(1, []) # hand card and past actions
+        self.assertEqual(player.hand_card, 1)
+        self.assertEqual(player.actions, [])
+
+    def test_to_np(self):
+        """Player to a numpy array"""
+        player = Player(1, [
+            PlayerAction(1, 3, 5),
+            PlayerAction(3, 0, 0)
+        ])
+        arr = np.array([1, 1, 3, 5, 3, 0, 0], dtype=np.uint8)
+        arr_res = PlayerTools.to_np(player)
+        self.assertEqual(len(arr_res), len(arr))
+        self.assertTrue((arr_res == arr).all())
+
+    def test_from_np(self):
+        """Player from a numpy array"""
+        player = Player(1, [
+            PlayerAction(1, 3, 5),
+            PlayerAction(3, 0, 0)
+        ])
+        arr = np.array([1, 1, 3, 5, 3, 0, 0], dtype=np.uint8)
+        player_res = PlayerTools.from_np(arr)
+        self.assertEqual(player_res, player)
+
 
 class TestPlayerActions(unittest.TestCase):
     """Test Player actions tools for the Love Letter Game"""
