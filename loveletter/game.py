@@ -3,8 +3,9 @@
 Love Letter Game object
 """
 
-from card import shuffle_deck
-from player import Player
+from card import Card
+from player import Player, PlayerTools, PlayerAction, PlayerActionTools
+
 
 class Game():
     """A Love Letter Game"""
@@ -33,7 +34,7 @@ class Game():
     @staticmethod
     def new(player_count=4, seed=451):
         """Create a brand new game"""
-        deck = shuffle_deck(seed)
+        deck = Card.shuffle_deck(seed)
 
         dealt_cards = deck[:player_count]
         undealt_cards = deck[player_count:]
