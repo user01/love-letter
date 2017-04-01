@@ -25,9 +25,9 @@ class PlayerActionTools():
     """Functions to work with PlayerAction tuples"""
 
     @staticmethod
-    def from_np(iter):
+    def from_np(arr):
         """Convert a player action tuple into a numpy array."""
-        return PlayerAction(iter[0], iter[1], iter[2])
+        return PlayerAction(arr[0], arr[1], arr[2])
 
     @staticmethod
     def to_np(player_action):
@@ -48,6 +48,7 @@ class PlayerActionTools():
         return np.reshape(actions, len(player_actions) * 3)
 
 # A Love Letter Player
+#
 #  hand_card - int corresponding to card currently in player's hand
 #  actions - PlayerAction[] of all actions taken by the player
 Player = namedtuple('Player', 'hand_card actions')
@@ -62,8 +63,10 @@ class PlayerTools():
     @staticmethod
     def to_np(player):
         """Convert a player tuple into a numpy array."""
-        return np.array([player.hand_card], dtype=np.uint8) + \
-            PlayerActionTools.to_np_many(player.actions)
+        hand_card = np.array([player.hand_card], dtype=np.uint8)
+        actions = PlayerActionTools.to_np_many(player.actions)
+        return np.concatenate([hand_card, actions])
+
 
     @staticmethod
     def from_np(arr):
