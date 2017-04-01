@@ -71,4 +71,4 @@ class PlayerTools():
     @staticmethod
     def from_np(arr):
         """Convert a player array into a Player tuple."""
-        return Player(arr[0], PlayerActionTools.from_np_many(arr[0:]))
+        return Player(arr[0], PlayerActionTools.from_np_many(arr[1:]))
