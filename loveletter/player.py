@@ -26,6 +26,14 @@ class PlayerActionTools():
     """Functions to work with PlayerAction tuples"""
 
     @staticmethod
+    def is_blank(action):
+        """If an action is blank (ie empty)"""
+        return action.discard == 0 and \
+            action.player_target == 0 and \
+            action.guess == 0 and \
+            action.revealed_card == 0
+
+    @staticmethod
     def from_np(arr):
         """Convert a player action tuple into a numpy array."""
         return PlayerAction(arr[0], arr[1], arr[2], arr[3])
@@ -53,6 +61,8 @@ class PlayerActionTools():
 #  hand_card - int corresponding to card currently in player's hand
 #  actions - PlayerAction[] of all actions taken by the player
 Player = namedtuple('Player', 'hand_card actions')
+
+
 class PlayerTools():
     """Functions to work with Player tuples"""
 
@@ -67,7 +77,6 @@ class PlayerTools():
         hand_card = np.array([player.hand_card], dtype=np.uint8)
         actions = PlayerActionTools.to_np_many(player.actions)
         return np.concatenate([hand_card, actions])
-
 
     @staticmethod
     def from_np(arr):

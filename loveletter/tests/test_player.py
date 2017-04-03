@@ -5,12 +5,13 @@ import numpy as np
 from loveletter.player import Player, PlayerTools
 from loveletter.player import PlayerAction, PlayerActionTools
 
+
 class TestPlayer(unittest.TestCase):
     """Test Player Tools for the Love Letter Game"""
 
     def test_init(self):
         """Create a Player"""
-        player = Player(1, []) # hand card and past actions
+        player = Player(1, [])  # hand card and past actions
         self.assertEqual(player.hand_card, 1)
         self.assertEqual(player.actions, [])
 
@@ -41,11 +42,22 @@ class TestPlayerActions(unittest.TestCase):
 
     def test_init(self):
         """Create an action"""
-        action = PlayerAction(1, 3, 5, 0) # play guard, on player 3, guessing Prince, no revealed card
+        # play guard, on player 3, guessing Prince, no revealed card
+        action = PlayerAction(1, 3, 5, 0)
         self.assertEqual(action.discard, 1)
         self.assertEqual(action.player_target, 3)
         self.assertEqual(action.guess, 5)
         self.assertEqual(action.revealed_card, 0)
+        self.assertEqual(PlayerActionTools.is_blank(action), False)
+
+    def test_blank(self):
+        """Create an action"""
+        # play guard, on player 3, guessing Prince, no revealed card
+        action_normal = PlayerAction(1, 3, 5, 0)
+        self.assertEqual(PlayerActionTools.is_blank(action_normal), False)
+        # no action - either hasn't been taken or player was eliminated
+        action_blank = PlayerAction(0, 0, 0, 0)
+        self.assertEqual(PlayerActionTools.is_blank(action_blank), True)
 
     def test_to_np(self):
         """Action to a numpy array"""
