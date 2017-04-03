@@ -8,6 +8,9 @@ from collections import namedtuple
 
 import numpy as np
 
+from loveletter.card import Card
+
+
 # A record of an action taken during a turn.
 # Card that was discarded and player that was targeted with the effect
 #
@@ -24,6 +27,14 @@ PlayerAction = namedtuple(
 
 class PlayerActionTools():
     """Functions to work with PlayerAction tuples"""
+
+    @staticmethod
+    def blank():
+        """
+        Generate a blank action (un-taken turn, either because the
+        game is in progress or the player is knocked out
+        """
+        return PlayerAction(0, 0, 0, 0)
 
     @staticmethod
     def is_blank(action):
@@ -60,11 +71,39 @@ class PlayerActionTools():
 #
 #  hand_card - int corresponding to card currently in player's hand
 #  actions - PlayerAction[] of all actions taken by the player
+#            Note that actions are always of length 8 (the most)
+#            number of moves a player can ever take in a game
+#            in a 2 player game (technically, but highly unlikely)
 Player = namedtuple('Player', 'hand_card actions')
 
 
 class PlayerTools():
     """Functions to work with Player tuples"""
+
+    @staticmethod
+    def blank(dealt_card):
+        """Generate a player with blank actions"""
+        return Player(dealt_card, [PlayerActionTools.blank()] * 8)
+
+    @staticmethod
+    def move(player, hand_card_new, action):
+        """Returns a new player object as the result of a move"""
+        actions = player.actions[:]
+        action_index = PlayerTools._next_empty_index(actions)
+        actions[action_index] = action
+        return Player(hand_card_new, actions)
+
+    @staticmethod
+    def force_discard(player):
+        """Returns a new player object that is forced to discard"""
+        return PlayerTools.move(player, Card.noCard, PlayerActionTools.blank())
+
+    @staticmethod
+    def _next_empty_index(actions):
+        for idx, action in enumerate(actions):
+            if action.discard == Card.noCard:
+                return idx
+        raise Exception("Insufficient space in actions")
 
     @staticmethod
     def is_playing(player):
