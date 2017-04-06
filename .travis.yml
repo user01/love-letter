@@ -4,6 +4,12 @@ python:
   - "3.5"
   - "3.6"
 # command to install dependencies
-install: "pip install -r requirements.txt"
+install:
+  - pip install -r requirements.txt
+  - pip install coveralls
 # command to run tests
-script: make test
+script:
+  make test
+  coverage run --source=loveletter loveletter/setup.py test
+after_success:
+  coveralls
