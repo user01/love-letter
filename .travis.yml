@@ -9,7 +9,7 @@ install:
   - pip install coveralls
 # command to run tests
 script:
-  make test
-  coverage run --source=loveletter loveletter/setup.py test
+  - make test
+  - coverage run --source=loveletter loveletter/setup.py test
 after_success:
-  coveralls
+  - coveralls
