@@ -1,0 +1,7 @@
+[run]
+source = pkgname,your_otherpackage
+
+[report]
+omit =
+    # omit anything in tests directory
+    */tests/*
