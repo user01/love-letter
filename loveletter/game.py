@@ -175,6 +175,13 @@ class Game():
         if action.discard not in player_hand:
             return False
 
+        new_hand_card = Game.new_hand_card(action.discard, player_hand)
+
+        # countess must be discarded if the other card is king/prince
+        if new_hand_card == Card.countess and \
+            (action.discard == Card.prince or action.discard == Card.king):
+            return False
+
         # cannot target an invalid player
         if not self._is_valid_player_target(action.player_target):
             return False
