@@ -4,7 +4,7 @@ Love Letter Game object
 """
 
 from loveletter.card import Card
-from loveletter.player import Player, PlayerTools, PlayerAction, PlayerActionTools
+from loveletter.player import PlayerTools, PlayerAction, PlayerActionTools
 
 
 class Game():
