@@ -304,7 +304,7 @@ class Game():
         """Return a fresh copy of players with the new player in the index"""
         players_new = players[:]
         players_new[player_new_index] = player_new
-        return players
+        return players_new
 
     @staticmethod
     def new_hand_card(card_discard, hand):
@@ -313,7 +313,7 @@ class Game():
         if len(new_hand) < 1:
             # this means the hand contained only one card. so one still remains
             return card_discard
-        return new_hand[0]
+        return int(new_hand[0])
 
     @staticmethod
     def new(player_count=4, seed=451):
