@@ -11,9 +11,34 @@ class TestPlayer(unittest.TestCase):
 
     def test_init(self):
         """Create a Player"""
-        player = Player(1, [])  # hand card and past actions
+        player = PlayerTools.blank(1)
         self.assertEqual(player.hand_card, 1)
-        self.assertEqual(player.actions, [])
+        self.assertEqual(len(player.actions), 8)
+        for action in player.actions:
+            self.assertTrue(PlayerActionTools.is_blank(action))
+
+    def test_move(self):
+        """Player performs a move"""
+        player = PlayerTools.blank(1)
+        player_next = PlayerTools.move(player, 4, PlayerAction(3, 2, 0, 0))
+
+        self.assertEqual(player.hand_card, 1)
+        self.assertEqual(len(player.actions), 8)
+        for action in player.actions:
+            self.assertTrue(PlayerActionTools.is_blank(action))
+
+        self.assertEqual(player_next.hand_card, 4)
+        self.assertEqual(len(player_next.actions), 8)
+        action = player_next.actions[0]
+
+        self.assertEqual(action.discard, 3)
+        self.assertEqual(action.player_target, 2)
+        self.assertEqual(action.guess, 0)
+        self.assertEqual(action.revealed_card, 0)
+        self.assertEqual(PlayerActionTools.is_blank(action), False)
+
+        for action in player_next.actions[1:]:
+            self.assertTrue(PlayerActionTools.is_blank(action))
 
     def test_to_np(self):
         """Player to a numpy array"""
