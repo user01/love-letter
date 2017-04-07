@@ -1,14 +1,27 @@
 # -*- coding: utf-8 -*-
 """Simple, face up console version of game"""
 
+import argparse
+
 from loveletter.game import Game
 from loveletter.player import PlayerAction
 from loveletter.card import Card
+
+
+PARSER = argparse.ArgumentParser(
+    description='Play a console Love Letter game')
+
+PARSER.add_argument('--seed', type=int, default=451,
+                    help='Seed to populate game')
+
+ARGS = PARSER.parse_args()
+
 
 def display(game):
     """Print a game to the console"""
     for line in game.to_str():
         print(line)
+
 
 def get_int(prompt):
     """Prompt until proper value given"""
@@ -27,9 +40,10 @@ def get_action():
     guess = get_int("Guessed Card") if discard == Card.guard else 0
     return PlayerAction(discard, player_target, guess, 0)
 
-def play():
+
+def play(seed):
     """Play a game"""
-    game = Game.new()
+    game = Game.new(4, seed)
     while game.active():
         display(game)
         print("  What card to play?")
@@ -41,7 +55,5 @@ def play():
             print("Invalid move - Exit with Ctrl-C")
 
 
-
-
 if __name__ == "__main__":
-    play()
+    play(ARGS.seed)

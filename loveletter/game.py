@@ -91,18 +91,19 @@ class Game():
 
         # choosing to discard the princess ... is valid
         if action.discard == Card.princess:
-            return self._move_princess(player_hand_new, deck_new)
+            return self._move_princess(self._deck[0], deck_new)
 
         # priest requires modification of action (knowledge)
         if action.discard == Card.priest:
             return self._move_priest(action, player_hand_new, deck_new)
-        if action.discard == Card.baron:
-            return self._move_baron(action, player_hand_new, deck_new)
 
         # updated players for the next turn
         player = PlayerTools.move(self._player(), player_hand_new, action)
         current_players = Game._set_player(
             self._players, player, self.player_turn())
+
+        if action.discard == Card.baron:
+            return self._move_baron(action, current_players, player_hand_new, deck_new)
 
         # No other logic for handmaids or countess
         if action.discard == Card.handmaid or \
@@ -155,7 +156,7 @@ class Game():
 
         return Game(deck_new, current_players, self._turn_index + 1)
 
-    def _move_baron(self, action, player_hand_new, deck_new):
+    def _move_baron(self, action, current_players, player_hand_new, deck_new):
         """
         Handle a baron action into a new game state
 
@@ -169,19 +170,20 @@ class Game():
                 player_target = PlayerTools.force_discard(
                     self._players[action.player_target])
                 current_players = Game._set_player(
-                    self._players, player_target, action.player_target)
+                    current_players, player_target, action.player_target)
         else:
             # player is eliminated
-            player = PlayerTools.force_discard(self._player())
+            player = PlayerTools.force_discard(self._player(), player_hand_new)
+            player = PlayerTools.force_discard(player)
             current_players = Game._set_player(
-                self._players, player, self.player_turn())
+                current_players, player, self.player_turn())
 
         return Game(deck_new, current_players, self._turn_index + 1)
 
     def _move_prince(self, current_players, action, deck_new):
         """Handle a prince action into a new game state"""
 
-        player_before_discard = self._players[action.player_target]
+        player_before_discard = current_players[action.player_target]
 
         # if there are no more cards, this has no effect
         if len(deck_new) - 1 < 1:
@@ -203,8 +205,8 @@ class Game():
 
     def _move_king(self, current_players, action, deck_new):
         """Handle a king action into a new game state"""
-        player = self._player()
-        target = self._players[action.player_target]
+        player = current_players[self.player_turn()]
+        target = current_players[action.player_target]
 
         player_new = PlayerTools.set_hand(player, target.hand_card)
         target_new = PlayerTools.set_hand(target, player.hand_card)
@@ -216,9 +218,9 @@ class Game():
 
         return Game(deck_new, current_players, self._turn_index + 1)
 
-    def _move_princess(self, player_hand, new_deck):
+    def _move_princess(self, dealt_card, new_deck):
         """Handle a princess action into a new game state"""
-        player = PlayerTools.force_discard(self._player(), player_hand)
+        player = PlayerTools.force_discard(self._player(), dealt_card)
         player = PlayerTools.force_discard(player)
         current_players = Game._set_player(
             self._players, player, self.player_turn())
@@ -304,7 +306,7 @@ class Game():
         """Return a fresh copy of players with the new player in the index"""
         players_new = players[:]
         players_new[player_new_index] = player_new
-        return players
+        return players_new
 
     @staticmethod
     def new_hand_card(card_discard, hand):
@@ -313,7 +315,7 @@ class Game():
         if len(new_hand) < 1:
             # this means the hand contained only one card. so one still remains
             return card_discard
-        return new_hand[0]
+        return int(new_hand[0])
 
     @staticmethod
     def new(player_count=4, seed=451):
