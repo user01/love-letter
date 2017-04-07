@@ -186,6 +186,46 @@ class TestBasic(unittest.TestCase):
         for action in target.actions[1:]:
             self.assertTrue(PlayerActionTools.is_blank(action))
 
+    def test_move_prince_self(self):
+        """Use prince to force self discard"""
+        game = Game.new(4, 2)
+        action = PlayerAction(Card.prince, 0, Card.noCard, Card.noCard)
+        action_other = PlayerAction(Card.handmaid, 0, Card.noCard, Card.noCard)
+        game = game.move(action)
+
+        players = game.players()
+        player = players[0]
+        self.assertTrue(PlayerTools.is_playing(player))
+        self.assertFalse(PlayerActionTools.is_blank(player.actions[0]))
+        self.assertFalse(PlayerActionTools.is_blank(player.actions[1]))
+        self.assertEqual(player.actions[0], action)
+        self.assertEqual(player.actions[1], action_other)
+        for action in player.actions[2:]:
+            self.assertTrue(PlayerActionTools.is_blank(action))
+
+    def test_move_prince_other(self):
+        """Use prince to force another to discard"""
+        game = Game.new(4, 2)
+        action = PlayerAction(Card.prince, 1, Card.noCard, Card.noCard)
+        action_target = PlayerAction(Card.guard, 0, Card.noCard, Card.noCard)
+        game = game.move(action)
+
+        players = game.players()
+        player = players[0]
+        target = players[1]
+
+        self.assertTrue(PlayerTools.is_playing(player))
+        self.assertFalse(PlayerActionTools.is_blank(player.actions[0]))
+        self.assertEqual(player.actions[0], action)
+        for action in player.actions[1:]:
+            self.assertTrue(PlayerActionTools.is_blank(action))
+
+        self.assertTrue(PlayerTools.is_playing(target))
+        self.assertFalse(PlayerActionTools.is_blank(target.actions[0]))
+        self.assertEqual(target.actions[0], action_target)
+        for action in target.actions[1:]:
+            self.assertTrue(PlayerActionTools.is_blank(action))
+
 
 
 if __name__ == '__main__':

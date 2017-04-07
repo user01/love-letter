@@ -183,7 +183,7 @@ class Game():
     def _move_prince(self, current_players, action, deck_new):
         """Handle a prince action into a new game state"""
 
-        player_before_discard = self._players[action.player_target]
+        player_before_discard = current_players[action.player_target]
 
         # if there are no more cards, this has no effect
         if len(deck_new) - 1 < 1:
