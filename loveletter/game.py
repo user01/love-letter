@@ -68,7 +68,7 @@ class Game():
 
     def move(self, action, throw=False):
         """Current player makes an action."""
-        if not self.is_action_valid(action):
+        if self.over() or not self.is_action_valid(action):
             return self._invalid_input(throw)
 
         # player is out, increment turn index
