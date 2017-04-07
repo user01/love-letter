@@ -76,6 +76,11 @@ class Game():
         current_players = Game._set_player(
             self._players, player_moved, self.player_turn())
 
+        # No other logic for handmaids or countess
+        if action.discard == Card.handmaid or \
+                action.discard == Card.countess:
+            return Game(deck_new, current_players, self._turn_index + 1)
+
         if action.discard == Card.guard:
             return self._move_guard(current_players, action, deck_new)
 
@@ -140,9 +145,6 @@ class Game():
 
         return Game(deck_new, current_players, self._turn_index + 1)
 
-    def _move_handmaid(self, action, player_hand_new, deck_new):
-        """Handle a handmaid action into a new game state"""
-        raise NotImplementedError("Missing game logic")
 
     def _move_prince(self, action, player_hand_new, deck_new):
         """Handle a prince action into a new game state"""
@@ -179,7 +181,7 @@ class Game():
 
         # countess must be discarded if the other card is king/prince
         if new_hand_card == Card.countess and \
-            (action.discard == Card.prince or action.discard == Card.king):
+                (action.discard == Card.prince or action.discard == Card.king):
             return False
 
         # cannot target an invalid player
