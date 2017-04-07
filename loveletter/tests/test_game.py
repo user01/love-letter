@@ -87,6 +87,29 @@ class TestBasic(unittest.TestCase):
         for action in player.actions[1:]:
             self.assertTrue(PlayerActionTools.is_blank(action))
 
+    def test_move_priest(self):
+        """Getting a priest move"""
+        game = Game.new(4, 5)
+        action = PlayerAction(Card.priest, 1, Card.noCard, Card.noCard)
+        action_expected = PlayerAction(Card.priest, 1, Card.noCard, Card.guard)
+        game = game.move(action)
+
+        self.assertEqual(game.round(), 0)
+        self.assertEqual(game.player_turn(), 1)
+        self.assertEqual(game.cards_left(), 9)
+        self.assertTrue(game.active())
+        self.assertFalse(game.over())
+
+        players = game.players()
+        player = players[0]
+        target = players[1]
+        recent_action = player.actions[0]
+
+        self.assertTrue(PlayerTools.is_playing(target))
+        self.assertEqual(recent_action, action_expected)
+        self.assertFalse(PlayerActionTools.is_blank(recent_action))
+        for action in player.actions[1:]:
+            self.assertTrue(PlayerActionTools.is_blank(action))
 
 
 if __name__ == '__main__':
