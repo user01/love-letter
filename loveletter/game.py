@@ -64,20 +64,23 @@ class Game():
         player_hand_new = Game.new_hand_card(action.card_discard, player_hand)
         deck_new = self._deck[1:]
 
-        if action.discard == Card.guard:
-            return self._move_guard(action, player_hand_new, deck_new)
-
+        # priest requires modification of action (knowledge)
         if action.discard == Card.priest:
             return self._move_priest(action, player_hand_new, deck_new)
 
+        # updated players for the next turn
+        player_moved = PlayerTools.move(
+            self._player(), player_hand_new, action)
+        current_players = Game._set_player(
+            self._players, player_moved, self.player_turn())
+
+        if action.discard == Card.guard:
+            return self._move_guard(current_players, action, deck_new)
 
         raise NotImplementedError("Missing game logic")
 
-    def _move_guard(self, action, player_hand_new, deck_new):
+    def _move_guard(self, current_players, action, deck_new):
         """Handle a guard action into a new game state"""
-        player = PlayerTools.move(self._player(), player_hand_new, action)
-        current_players = Game._set_player(
-            self._players, player, self.player_turn())
 
         if self._players[action.player_target].hand_card == action.guess:
             # then target player is out
@@ -88,25 +91,39 @@ class Game():
 
         return Game(deck_new, current_players, self._turn_index + 1)
 
-
     def _move_priest(self, action, player_hand_new, deck_new):
         """Handle a priest action into a new game state"""
-        raise NotImplementedError("Missing game logic")
+        player_targets_card = self._players[action.player_target].hand_card
+        action_updated = PlayerAction(
+            action.discard, action.player_target, action.guess, player_targets_card)
+
+        player = PlayerTools.move(
+            self._player(), player_hand_new, action_updated)
+        current_players = Game._set_player(
+            self._players, player, self.player_turn())
+
+        return Game(deck_new, current_players, self._turn_index + 1)
+
     def _move_baron(self, action, player_hand_new, deck_new):
         """Handle a baron action into a new game state"""
         raise NotImplementedError("Missing game logic")
+
     def _move_handmaid(self, action, player_hand_new, deck_new):
         """Handle a handmaid action into a new game state"""
         raise NotImplementedError("Missing game logic")
+
     def _move_prince(self, action, player_hand_new, deck_new):
         """Handle a prince action into a new game state"""
         raise NotImplementedError("Missing game logic")
+
     def _move_king(self, action, player_hand_new, deck_new):
         """Handle a king action into a new game state"""
         raise NotImplementedError("Missing game logic")
+
     def _move_countess(self, action, player_hand_new, deck_new):
         """Handle a countess action into a new game state"""
         raise NotImplementedError("Missing game logic")
+
     def _move_princess(self, action, player_hand_new, deck_new):
         """Handle a princess action into a new game state"""
         raise NotImplementedError("Missing game logic")
