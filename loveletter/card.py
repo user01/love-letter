@@ -20,9 +20,11 @@ class Card():
     princess = 8
 
     #              0          1        2         3
-    names = ['No Card', 'Guard', 'Priest', 'Baron',
+    names = ['', 'Guard', 'Priest', 'Baron',
              # 4           5         6       7           8
              'Handmaid', 'Prince', 'King', 'Countess', 'Princess']
+    #           0     1     2    3     4    5    6    7    8
+    symbols = ['☁️', '⚔️', '🕌', '🎲', '🛡️', '⚜️', '👑', '🙍', '❤️']
 
     descriptions = ['None',  # None
                     'Guess a player\'s hand',  # Guard
@@ -49,8 +51,8 @@ class Card():
     @staticmethod
     def render_card_number(card):
         """Render a card name with padded length"""
-        numbered_names = ["{}({})".format(name, idx)
-                          for idx, name in enumerate(Card.names)]
+        numbered_names = ["{} {} ({})".format(name, symbol, idx)
+                          for idx, (name, symbol) in enumerate(zip(Card.names, Card.symbols))]
         max_length = max([len(i) for i in numbered_names])
         str_base = "{0: >" + str(max_length) + "}"
         return str_base.format(numbered_names[card])
