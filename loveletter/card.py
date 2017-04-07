@@ -50,7 +50,7 @@ class Card():
     def render_card_number(card):
         """Render a card name with padded length"""
         max_length = max([len(i) for i in Card.names])
-        str_base = "{0: >" + max_length + "}"
+        str_base = "{0: >" + str(max_length) + "}"
         return str_base.format(Card.names[card])
 
     @staticmethod
