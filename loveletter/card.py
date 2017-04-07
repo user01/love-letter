@@ -49,9 +49,11 @@ class Card():
     @staticmethod
     def render_card_number(card):
         """Render a card name with padded length"""
-        max_length = max([len(i) for i in Card.names])
+        numbered_names = ["{}({})".format(name, idx)
+                          for idx, name in enumerate(Card.names)]
+        max_length = max([len(i) for i in numbered_names])
         str_base = "{0: >" + str(max_length) + "}"
-        return str_base.format(Card.names[card])
+        return str_base.format(numbered_names[card])
 
     @staticmethod
     def shuffle_deck(seed=451):
