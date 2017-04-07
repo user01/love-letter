@@ -293,8 +293,10 @@ class Game():
     def _to_str_player(self, idx, player):
         is_playing = " " if PlayerTools.is_playing(player) else "☠️"
         is_turn = "⭐" if self.player_turn() == idx else " "
+        draw_card = self.draw_card() if self.active() and self.player_turn() == idx else Card.noCard
+        draw_card_render = Card.render_card_number(draw_card)
         header = "Player {} {} {}".format(idx, is_turn, is_playing)
-        state = "   Current: {}".format(PlayerTools.to_str(player))
+        state = "   Current: {} {}".format(draw_card_render, PlayerTools.to_str(player))
         return [header, state]
 
     @staticmethod
