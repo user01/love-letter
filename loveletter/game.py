@@ -196,10 +196,6 @@ class Game():
 
         return Game(deck_new, current_players, self._turn_index + 1)
 
-    def _move_countess(self, action, player_hand_new, deck_new):
-        """Handle a countess action into a new game state"""
-        raise NotImplementedError("Missing game logic")
-
     def _move_princess(self, action, player_hand_new, deck_new):
         """Handle a princess action into a new game state"""
         raise NotImplementedError("Missing game logic")
