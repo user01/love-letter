@@ -111,6 +111,24 @@ class TestBasic(unittest.TestCase):
         for action in player.actions[1:]:
             self.assertTrue(PlayerActionTools.is_blank(action))
 
+    def test_move_baron_success(self):
+        """Getting a baron move, with a success"""
+        game = Game.new(4, 48)
+        action = PlayerAction(Card.baron, 3, Card.noCard, Card.noCard)
+        game = game.move(action)
+
+        players = game.players()
+        player = players[0]
+        target = players[3]
+        recent_action = player.actions[0]
+
+        self.assertFalse(PlayerTools.is_playing(target))
+        self.assertEqual(recent_action, action)
+
+        self.assertFalse(PlayerActionTools.is_blank(recent_action))
+        for action in player.actions[1:]:
+            self.assertTrue(PlayerActionTools.is_blank(action))
+
 
 if __name__ == '__main__':
     unittest.main()

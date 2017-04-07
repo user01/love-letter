@@ -96,13 +96,14 @@ class Game():
         # priest requires modification of action (knowledge)
         if action.discard == Card.priest:
             return self._move_priest(action, player_hand_new, deck_new)
-        if action.discard == Card.baron:
-            return self._move_baron(action, player_hand_new, deck_new)
 
         # updated players for the next turn
         player = PlayerTools.move(self._player(), player_hand_new, action)
         current_players = Game._set_player(
             self._players, player, self.player_turn())
+
+        if action.discard == Card.baron:
+            return self._move_baron(action, current_players, player_hand_new, deck_new)
 
         # No other logic for handmaids or countess
         if action.discard == Card.handmaid or \
@@ -155,7 +156,7 @@ class Game():
 
         return Game(deck_new, current_players, self._turn_index + 1)
 
-    def _move_baron(self, action, player_hand_new, deck_new):
+    def _move_baron(self, action, current_players, player_hand_new, deck_new):
         """
         Handle a baron action into a new game state
 
@@ -169,12 +170,12 @@ class Game():
                 player_target = PlayerTools.force_discard(
                     self._players[action.player_target])
                 current_players = Game._set_player(
-                    self._players, player_target, action.player_target)
+                    current_players, player_target, action.player_target)
         else:
             # player is eliminated
             player = PlayerTools.force_discard(self._player())
             current_players = Game._set_player(
-                self._players, player, self.player_turn())
+                current_players, player, self.player_turn())
 
         return Game(deck_new, current_players, self._turn_index + 1)
 
