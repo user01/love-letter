@@ -4,6 +4,7 @@ import unittest
 from loveletter.game import Game
 from loveletter.card import Card
 from loveletter.player import PlayerAction, PlayerActionTools
+from loveletter.player import PlayerTools
 
 
 class TestInit(unittest.TestCase):
@@ -51,8 +52,35 @@ class TestBasic(unittest.TestCase):
 
         players = game.players()
         player = players[0]
+        target = players[1]
         recent_action = player.actions[0]
 
+        self.assertTrue(PlayerTools.is_playing(target))
+        self.assertEqual(recent_action, action)
+        self.assertEqual(player.hand_card, Card.handmaid)
+        self.assertFalse(PlayerActionTools.is_blank(recent_action))
+        for action in player.actions[1:]:
+            self.assertTrue(PlayerActionTools.is_blank(action))
+
+
+    def test_move_guard_success(self):
+        """Getting a guard move, with a right guess"""
+        game = Game.new()
+        action = PlayerAction(Card.guard, 3, Card.handmaid, 0)
+        game = game.move(action)
+
+        self.assertEqual(game.round(), 0)
+        self.assertEqual(game.player_turn(), 1)
+        self.assertEqual(game.cards_left(), 9)
+        self.assertTrue(game.active())
+        self.assertFalse(game.over())
+
+        players = game.players()
+        player = players[0]
+        target = players[3]
+        recent_action = player.actions[0]
+
+        self.assertFalse(PlayerTools.is_playing(target))
         self.assertEqual(recent_action, action)
         self.assertEqual(player.hand_card, Card.handmaid)
         self.assertFalse(PlayerActionTools.is_blank(recent_action))
