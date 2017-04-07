@@ -15,7 +15,8 @@ class Game():
         self._players = players
         self._turn_index = turn_index
 
-        total_playing = sum([1 for player in players if PlayerTools.is_playing(player)])
+        total_playing = sum(
+            [1 for player in players if PlayerTools.is_playing(player)])
         self._game_active = total_playing > 1
 
     def players(self):
@@ -274,6 +275,27 @@ class Game():
         if throw:
             raise Exception("Invalid Move")
         return self
+
+    def to_str(self):
+        """Returns a string[] representation of the game"""
+        strings = [
+            "" + ("━" * 79),
+            "Game is active" if self.active() else "Game is over",
+            "Round {}".format(self.round()),
+            ""
+        ]
+        for idx, player in enumerate(self._players):
+            strings += self._to_str_player(idx, player)
+            strings += [""]
+
+        return strings
+
+    def _to_str_player(self, idx, player):
+        is_playing = " " if PlayerTools.is_playing(player) else "☠️"
+        is_turn = "⭐" if self.player_turn() == idx else " "
+        header = "Player {} {} {}".format(idx, is_turn, is_playing)
+        state = "   Current: {}".format(PlayerTools.to_str(player))
+        return [header, state]
 
     @staticmethod
     def _set_player(players, player_new, player_new_index):

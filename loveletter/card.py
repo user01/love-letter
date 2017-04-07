@@ -47,6 +47,13 @@ class Card():
     only_other = [1, 2, 3, 6]
 
     @staticmethod
+    def render_card_number(card):
+        """Render a card name with padded length"""
+        max_length = max([len(i) for i in Card.names])
+        str_base = "{0: >" + max_length + "}"
+        return str_base.format(Card.names[card])
+
+    @staticmethod
     def shuffle_deck(seed=451):
         """A numpy array of shuffled cards"""
         deck = []

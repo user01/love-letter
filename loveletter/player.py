@@ -52,6 +52,12 @@ class PlayerActionTools():
             action.revealed_card == 0
 
     @staticmethod
+    def to_str(action):
+        """Convert a player action to a renderable string."""
+        # TODO: Improve this render
+        return Card.render_card_number(action.discard)
+
+    @staticmethod
     def from_np(arr):
         """Convert a player action tuple into a numpy array."""
         return PlayerAction(arr[0], arr[1], arr[2], arr[3])
@@ -132,6 +138,14 @@ class PlayerTools():
     def is_playing(player):
         """Player still has a card"""
         return player.hand_card != 0
+
+    @staticmethod
+    def to_str(player):
+        """Convert a player tuple into rendered string."""
+        actions_str = " | ".join([PlayerActionTools.to_str(action)
+                                  for action in player.actions if
+                                  not PlayerActionTools.is_blank(action)])
+        return "{} > {}".format(Card.render_card_number(player.hand_card), actions_str)
 
     @staticmethod
     def to_np(player):
