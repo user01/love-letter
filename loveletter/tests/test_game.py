@@ -122,11 +122,37 @@ class TestBasic(unittest.TestCase):
         target = players[3]
         recent_action = player.actions[0]
 
+        self.assertTrue(PlayerTools.is_playing(player))
         self.assertFalse(PlayerTools.is_playing(target))
         self.assertEqual(recent_action, action)
 
         self.assertFalse(PlayerActionTools.is_blank(recent_action))
         for action in player.actions[1:]:
+            self.assertTrue(PlayerActionTools.is_blank(action))
+
+        self.assertFalse(PlayerActionTools.is_blank(target.actions[0]))
+        for action in target.actions[1:]:
+            self.assertTrue(PlayerActionTools.is_blank(action))
+
+    def test_move_baron_failure(self):
+        """Getting a baron move, with a failure"""
+        game = Game.new(4, 48)
+        action = PlayerAction(Card.baron, 1, Card.noCard, Card.noCard)
+        game = game.move(action)
+
+        players = game.players()
+        player = players[0]
+        target = players[1]
+
+        self.assertFalse(PlayerTools.is_playing(player))
+        self.assertTrue(PlayerTools.is_playing(target))
+
+        self.assertFalse(PlayerActionTools.is_blank(player.actions[0]))
+        self.assertFalse(PlayerActionTools.is_blank(player.actions[1]))
+        for action in player.actions[2:]:
+            self.assertTrue(PlayerActionTools.is_blank(action))
+
+        for action in target.actions:
             self.assertTrue(PlayerActionTools.is_blank(action))
 
 

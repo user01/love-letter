@@ -173,7 +173,8 @@ class Game():
                     current_players, player_target, action.player_target)
         else:
             # player is eliminated
-            player = PlayerTools.force_discard(self._player())
+            player = PlayerTools.force_discard(self._player(), player_hand_new)
+            player = PlayerTools.force_discard(player)
             current_players = Game._set_player(
                 current_players, player, self.player_turn())
 
