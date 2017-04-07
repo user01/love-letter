@@ -101,6 +101,11 @@ class PlayerTools():
         return Player(hand_card_new, actions)
 
     @staticmethod
+    def set_hand(player, hand_card_new):
+        """Returns a new player object as the result of a move"""
+        return Player(hand_card_new, player.actions[:])
+
+    @staticmethod
     def is_defended(player):
         """Returns if the player object is protected by a handmaid"""
         actions = player.actions[:]
