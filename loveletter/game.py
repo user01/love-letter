@@ -68,9 +68,12 @@ class Game():
 
         player = self._player()
         player_hand = [player.hand_card, self._deck[0]]
-
         player_hand_new = Game.new_hand_card(action.card_discard, player_hand)
         deck_new = self._deck[1:]
+
+        # choosing to discard the princess ... is valid
+        if action.discard == Card.princess:
+            return self._move_princess(player_hand_new, deck_new)
 
         # priest requires modification of action (knowledge)
         if action.discard == Card.priest:
@@ -79,10 +82,9 @@ class Game():
             return self._move_baron(action, player_hand_new, deck_new)
 
         # updated players for the next turn
-        player_moved = PlayerTools.move(
-            self._player(), player_hand_new, action)
+        player = PlayerTools.move(self._player(), player_hand_new, action)
         current_players = Game._set_player(
-            self._players, player_moved, self.player_turn())
+            self._players, player, self.player_turn())
 
         # No other logic for handmaids or countess
         if action.discard == Card.handmaid or \
@@ -196,9 +198,13 @@ class Game():
 
         return Game(deck_new, current_players, self._turn_index + 1)
 
-    def _move_princess(self, action, player_hand_new, deck_new):
+    def _move_princess(self, player_hand, new_deck):
         """Handle a princess action into a new game state"""
-        raise NotImplementedError("Missing game logic")
+        player = PlayerTools.force_discard(self._player(), player_hand)
+        player = PlayerTools.force_discard(player)
+        current_players = Game._set_player(
+            self._players, player, self.player_turn())
+        return Game(new_deck, current_players, self._turn_index + 1)
 
     def is_action_valid(self, action):
         """Tests if an action is valid given the current game state"""
