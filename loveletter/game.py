@@ -86,7 +86,7 @@ class Game():
 
         player = self._player()
         player_hand = [player.hand_card, self._deck[0]]
-        player_hand_new = Game.new_hand_card(action.card_discard, player_hand)
+        player_hand_new = Game.new_hand_card(action.discard, player_hand)
         deck_new = self._deck[1:]
 
         # choosing to discard the princess ... is valid
