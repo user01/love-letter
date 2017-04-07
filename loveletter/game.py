@@ -87,7 +87,8 @@ class Game():
 
         Player makes a guess to try and eliminate the opponent
         """
-        if self._players[action.player_target].hand_card == action.guess:
+        if self._players[action.player_target].hand_card == action.guess and \
+                not PlayerTools.is_defended(self._players[action.player_target]):
             # then target player is out
             player_target = PlayerTools.force_discard(
                 self._players[action.player_target])
@@ -102,7 +103,9 @@ class Game():
 
         Action gains knowledge of other player's card
         """
-        player_targets_card = self._players[action.player_target].hand_card
+        player_targets_card = Card.noCard if \
+            PlayerTools.is_defended(self._players[action.player_target]) \
+            else self._players[action.player_target].hand_card
         action_updated = PlayerAction(
             action.discard, action.player_target, action.guess, player_targets_card)
 
@@ -122,11 +125,12 @@ class Game():
         """
         card_target = self._players[action.player_target].hand_card
         if player_hand_new > card_target:
-            # target is eliminated
-            player_target = PlayerTools.force_discard(
-                self._players[action.player_target])
-            current_players = Game._set_player(
-                self._players, player_target, action.player_target)
+            if not PlayerTools.is_defended(self._players[action.player_target]):
+                # target is eliminated
+                player_target = PlayerTools.force_discard(
+                    self._players[action.player_target])
+                current_players = Game._set_player(
+                    self._players, player_target, action.player_target)
         else:
             # player is eliminated
             player = PlayerTools.force_discard(

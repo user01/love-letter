@@ -94,6 +94,17 @@ class PlayerTools():
         return Player(hand_card_new, actions)
 
     @staticmethod
+    def is_defended(player):
+        """Returns if the player object is protected by a handmaid"""
+        actions = player.actions[:]
+        action_index = PlayerTools._next_empty_index(actions)
+        if action_index == 0:
+            return False
+
+        last_discard = actions[action_index - 1].discard
+        return last_discard == Card.handmaid
+
+    @staticmethod
     def force_discard(player):
         """Returns a new player object that is forced to discard"""
         return PlayerTools.move(player, Card.noCard, PlayerActionTools.blank())
