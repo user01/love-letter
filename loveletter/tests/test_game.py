@@ -247,6 +247,25 @@ class TestBasic(unittest.TestCase):
         for action in target.actions:
             self.assertTrue(PlayerActionTools.is_blank(action))
 
+    def test_move_princess(self):
+        """Commit suicide by discarding the princess"""
+        game = Game.new(4, 0)
+        action = PlayerAction(Card.princess, 0, Card.noCard, Card.noCard)
+        game = game.move(action)
+
+        players = game.players()
+        player = players[0]
+
+        self.assertFalse(PlayerTools.is_playing(player))
+        self.assertFalse(PlayerActionTools.is_blank(player.actions[0]))
+        self.assertFalse(PlayerActionTools.is_blank(player.actions[1]))
+        self.assertEqual(player.actions[0], PlayerAction(
+            Card.guard, 0, Card.noCard, Card.noCard))
+        self.assertEqual(player.actions[1], action)
+
+        for action in player.actions[2:]:
+            self.assertTrue(PlayerActionTools.is_blank(action))
+
 
 if __name__ == '__main__':
     unittest.main()

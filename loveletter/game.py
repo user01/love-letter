@@ -91,7 +91,7 @@ class Game():
 
         # choosing to discard the princess ... is valid
         if action.discard == Card.princess:
-            return self._move_princess(player_hand_new, deck_new)
+            return self._move_princess(self._deck[0], deck_new)
 
         # priest requires modification of action (knowledge)
         if action.discard == Card.priest:
@@ -218,9 +218,9 @@ class Game():
 
         return Game(deck_new, current_players, self._turn_index + 1)
 
-    def _move_princess(self, player_hand, new_deck):
+    def _move_princess(self, dealt_card, new_deck):
         """Handle a princess action into a new game state"""
-        player = PlayerTools.force_discard(self._player(), player_hand)
+        player = PlayerTools.force_discard(self._player(), dealt_card)
         player = PlayerTools.force_discard(player)
         current_players = Game._set_player(
             self._players, player, self.player_turn())
