@@ -3,7 +3,7 @@
 import unittest
 from loveletter.game import Game
 from loveletter.card import Card
-from loveletter.player import PlayerAction
+from loveletter.player import PlayerAction, PlayerActionTools
 
 
 class TestInit(unittest.TestCase):
@@ -48,6 +48,18 @@ class TestBasic(unittest.TestCase):
         self.assertEqual(game.cards_left(), 9)
         self.assertTrue(game.active())
         self.assertFalse(game.over())
+
+        players = game.players()
+        player = players[0]
+        recent_action = player.actions[0]
+
+        self.assertEqual(recent_action, action)
+        self.assertEqual(player.hand_card, Card.handmaid)
+        self.assertFalse(PlayerActionTools.is_blank(recent_action))
+        for action in player.actions[1:]:
+            self.assertTrue(PlayerActionTools.is_blank(action))
+
+
 
 if __name__ == '__main__':
     unittest.main()
