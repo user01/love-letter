@@ -155,6 +155,38 @@ class TestBasic(unittest.TestCase):
         for action in target.actions:
             self.assertTrue(PlayerActionTools.is_blank(action))
 
+    def test_move_handmaid(self):
+        """Deploy the handmaid and survive attack"""
+        game = Game.new(4, 2)
+        action = PlayerAction(Card.handmaid, 0, Card.noCard, Card.noCard)
+        game = game.move(action)
+
+        players = game.players()
+        player = players[0]
+        self.assertTrue(PlayerTools.is_playing(player))
+        self.assertFalse(PlayerActionTools.is_blank(player.actions[0]))
+        self.assertEqual(player.actions[0], action)
+        for action in player.actions[1:]:
+            self.assertTrue(PlayerActionTools.is_blank(action))
+
+        action_attack = PlayerAction(Card.guard, 0, Card.prince, Card.noCard)
+        game = game.move(action_attack)
+
+        players = game.players()
+        target = players[0]
+        player = players[1]
+        self.assertTrue(PlayerTools.is_playing(player))
+        self.assertTrue(PlayerTools.is_playing(target))
+
+        self.assertFalse(PlayerActionTools.is_blank(player.actions[0]))
+        self.assertEqual(player.actions[0], action_attack)
+        for action in player.actions[1:]:
+            self.assertTrue(PlayerActionTools.is_blank(action))
+
+        for action in target.actions[1:]:
+            self.assertTrue(PlayerActionTools.is_blank(action))
+
+
 
 if __name__ == '__main__':
     unittest.main()
