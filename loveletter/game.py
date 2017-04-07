@@ -30,6 +30,14 @@ class Game():
         """
         return self._deck
 
+    def draw_card(self):
+        """
+        Card currently available to the next player.
+
+        Only valid if the game is not over.
+        """
+        return self._deck[0]
+
     def turn_index(self):
         """
         Overall turn index of the game.
