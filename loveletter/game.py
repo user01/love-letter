@@ -49,6 +49,14 @@ class Game():
         """Returns the current player"""
         return self._players[self.player_turn()]
 
+    def cards_left(self):
+        """
+        Number of cards left in deck to distribute
+
+        Does not include the held back card
+        """
+        return len(self._deck) - 1
+
     def move(self, action, throw=False):
         """Current player makes an action."""
         if not self.is_action_valid(action):
@@ -83,6 +91,9 @@ class Game():
 
         if action.discard == Card.guard:
             return self._move_guard(current_players, action, deck_new)
+
+        if action.discard == Card.prince:
+            return self._move_prince(current_players, action, deck_new)
 
         raise NotImplementedError("Missing game logic")
 
@@ -145,10 +156,28 @@ class Game():
 
         return Game(deck_new, current_players, self._turn_index + 1)
 
-
-    def _move_prince(self, action, player_hand_new, deck_new):
+    def _move_prince(self, current_players, action, deck_new):
         """Handle a prince action into a new game state"""
-        raise NotImplementedError("Missing game logic")
+
+        player_before_discard = self._players[action.player_target]
+
+        # if there are no more cards, this has no effect
+        if len(deck_new) - 1 < 1:
+            return Game(deck_new, current_players, self._turn_index + 1)
+
+        if player_before_discard.hand_card == Card.princess:
+            player_post_discard = PlayerTools.force_discard(
+                player_before_discard)
+            deck_final = deck_new
+        else:
+            player_post_discard = PlayerTools.force_discard(
+                player_before_discard, deck_new[0])
+            deck_final = deck_new[1:]
+
+        current_players = Game._set_player(
+            current_players, player_post_discard, action.player_target)
+
+        return Game(deck_final, current_players, self._turn_index + 1)
 
     def _move_king(self, action, player_hand_new, deck_new):
         """Handle a king action into a new game state"""
