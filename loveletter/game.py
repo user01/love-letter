@@ -15,7 +15,8 @@ class Game():
         self._players = players
         self._turn_index = turn_index
 
-        # TODO: check if game is over
+        total_playing = sum([1 for player in players if PlayerTools.is_playing(player)])
+        self._game_active = total_playing > 1
 
     def players(self):
         """List of current players."""
@@ -56,6 +57,14 @@ class Game():
         Does not include the held back card
         """
         return len(self._deck) - 1
+
+    def active(self):
+        """Return True if the game is still playing"""
+        return self._game_active
+
+    def over(self):
+        """Return True if the game is over"""
+        return not self.active()
 
     def move(self, action, throw=False):
         """Current player makes an action."""
