@@ -67,6 +67,8 @@ class Game():
         # priest requires modification of action (knowledge)
         if action.discard == Card.priest:
             return self._move_priest(action, player_hand_new, deck_new)
+        if action.discard == Card.baron:
+            return self._move_baron(action, player_hand_new, deck_new)
 
         # updated players for the next turn
         player_moved = PlayerTools.move(
@@ -80,8 +82,11 @@ class Game():
         raise NotImplementedError("Missing game logic")
 
     def _move_guard(self, current_players, action, deck_new):
-        """Handle a guard action into a new game state"""
+        """
+        Handle a guard action into a new game state
 
+        Player makes a guess to try and eliminate the opponent
+        """
         if self._players[action.player_target].hand_card == action.guess:
             # then target player is out
             player_target = PlayerTools.force_discard(
@@ -92,7 +97,11 @@ class Game():
         return Game(deck_new, current_players, self._turn_index + 1)
 
     def _move_priest(self, action, player_hand_new, deck_new):
-        """Handle a priest action into a new game state"""
+        """
+        Handle a priest action into a new game state
+
+        Action gains knowledge of other player's card
+        """
         player_targets_card = self._players[action.player_target].hand_card
         action_updated = PlayerAction(
             action.discard, action.player_target, action.guess, player_targets_card)
@@ -105,8 +114,27 @@ class Game():
         return Game(deck_new, current_players, self._turn_index + 1)
 
     def _move_baron(self, action, player_hand_new, deck_new):
-        """Handle a baron action into a new game state"""
-        raise NotImplementedError("Missing game logic")
+        """
+        Handle a baron action into a new game state
+
+        Player and target compare hand cards. Player with lower hand
+        card is eliminated
+        """
+        card_target = self._players[action.player_target].hand_card
+        if player_hand_new > card_target:
+            # target is eliminated
+            player_target = PlayerTools.force_discard(
+                self._players[action.player_target])
+            current_players = Game._set_player(
+                self._players, player_target, action.player_target)
+        else:
+            # player is eliminated
+            player = PlayerTools.force_discard(
+                self._players[self.player_turn()])
+            current_players = Game._set_player(
+                self._players, player, self.player_turn())
+
+        return Game(deck_new, current_players, self._turn_index + 1)
 
     def _move_handmaid(self, action, player_hand_new, deck_new):
         """Handle a handmaid action into a new game state"""
