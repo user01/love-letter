@@ -205,8 +205,8 @@ class Game():
 
     def _move_king(self, current_players, action, deck_new):
         """Handle a king action into a new game state"""
-        player = self._player()
-        target = self._players[action.player_target]
+        player = current_players[self.player_turn()]
+        target = current_players[action.player_target]
 
         player_new = PlayerTools.set_hand(player, target.hand_card)
         target_new = PlayerTools.set_hand(target, player.hand_card)

@@ -62,7 +62,6 @@ class TestBasic(unittest.TestCase):
         for action in player.actions[1:]:
             self.assertTrue(PlayerActionTools.is_blank(action))
 
-
     def test_move_guard_success(self):
         """Getting a guard move, with a right guess"""
         game = Game.new()
@@ -226,6 +225,27 @@ class TestBasic(unittest.TestCase):
         for action in target.actions[1:]:
             self.assertTrue(PlayerActionTools.is_blank(action))
 
+    def test_move_king(self):
+        """Use king to swap hands with the target"""
+        game = Game.new(4, 3)
+        action = PlayerAction(Card.king, 3, Card.noCard, Card.noCard)
+        game = game.move(action)
+
+        players = game.players()
+        player = players[0]
+        target = players[3]
+
+        self.assertTrue(PlayerTools.is_playing(player))
+        self.assertFalse(PlayerActionTools.is_blank(player.actions[0]))
+        self.assertEqual(player.actions[0], action)
+        self.assertEqual(player.hand_card, Card.priest)
+        for action in player.actions[1:]:
+            self.assertTrue(PlayerActionTools.is_blank(action))
+
+        self.assertTrue(PlayerTools.is_playing(target))
+        self.assertEqual(target.hand_card, Card.guard)
+        for action in target.actions:
+            self.assertTrue(PlayerActionTools.is_blank(action))
 
 
 if __name__ == '__main__':
