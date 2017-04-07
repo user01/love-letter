@@ -37,6 +37,13 @@ class PlayerActionTools():
         return PlayerAction(0, 0, 0, 0)
 
     @staticmethod
+    def simple(card):
+        """
+        Generate an action to just discard, no effects
+        """
+        return PlayerAction(card, 0, 0, 0)
+
+    @staticmethod
     def is_blank(action):
         """If an action is blank (ie empty)"""
         return action.discard == 0 and \
@@ -105,9 +112,9 @@ class PlayerTools():
         return last_discard == Card.handmaid
 
     @staticmethod
-    def force_discard(player):
+    def force_discard(player, new_card=Card.noCard):
         """Returns a new player object that is forced to discard"""
-        return PlayerTools.move(player, Card.noCard, PlayerActionTools.blank())
+        return PlayerTools.move(player, new_card, PlayerActionTools.simple(player.hand_card))
 
     @staticmethod
     def _next_empty_index(actions):
