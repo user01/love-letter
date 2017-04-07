@@ -66,7 +66,7 @@ class Game():
         if action.discard == Card.noCard:
             return Game(self.deck(), self.players(), self.turn_index() + 1)
 
-        player = self._players[self.player_turn()]
+        player = self._player()
         player_hand = [player.hand_card, self._deck[0]]
 
         player_hand_new = Game.new_hand_card(action.card_discard, player_hand)
@@ -94,6 +94,9 @@ class Game():
 
         if action.discard == Card.prince:
             return self._move_prince(current_players, action, deck_new)
+
+        if action.discard == Card.king:
+            return self._move_king(current_players, action, deck_new)
 
         raise NotImplementedError("Missing game logic")
 
@@ -149,8 +152,7 @@ class Game():
                     self._players, player_target, action.player_target)
         else:
             # player is eliminated
-            player = PlayerTools.force_discard(
-                self._players[self.player_turn()])
+            player = PlayerTools.force_discard(self._player())
             current_players = Game._set_player(
                 self._players, player, self.player_turn())
 
@@ -179,9 +181,20 @@ class Game():
 
         return Game(deck_final, current_players, self._turn_index + 1)
 
-    def _move_king(self, action, player_hand_new, deck_new):
+    def _move_king(self, current_players, action, deck_new):
         """Handle a king action into a new game state"""
-        raise NotImplementedError("Missing game logic")
+        player = self._player()
+        target = self._players[action.player_target]
+
+        player_new = PlayerTools.set_hand(player, target.hand_card)
+        target_new = PlayerTools.set_hand(target, player.hand_card)
+
+        current_players = Game._set_player(
+            current_players, player_new, self.player_turn())
+        current_players = Game._set_player(
+            current_players, target_new, action.player_target)
+
+        return Game(deck_new, current_players, self._turn_index + 1)
 
     def _move_countess(self, action, player_hand_new, deck_new):
         """Handle a countess action into a new game state"""
@@ -193,7 +206,7 @@ class Game():
 
     def is_action_valid(self, action):
         """Tests if an action is valid given the current game state"""
-        player = self._players[self.player_turn()]
+        player = self._player()
 
         # if player is out, only valid action is no action
         if player.hand_card == Card.noCard:
