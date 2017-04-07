@@ -145,7 +145,7 @@ class PlayerTools():
         actions_str = " | ".join([PlayerActionTools.to_str(action)
                                   for action in player.actions if
                                   not PlayerActionTools.is_blank(action)])
-        return "{} > {}".format(Card.render_card_number(player.hand_card), actions_str)
+        return "{} ┋┋ {}".format(Card.render_card_number(player.hand_card), actions_str)
 
     @staticmethod
     def to_np(player):
