@@ -35,9 +35,15 @@ class Game():
         """
         Card currently available to the next player.
 
-        Only valid if the game is not over.
+        Only valid if the game is not over (otherwise No Card)
         """
-        return self._deck[0]
+        return self._deck[0] if len(self._deck) > 2 else Card.noCard
+
+    def held_card(self):
+        """
+        Card withheld from the game
+        """
+        return self._deck[-1]
 
     def turn_index(self):
         """
@@ -293,7 +299,8 @@ class Game():
         strings = [
             "" + ("━" * 79),
             "Game is active" if self.active() else "Game is over",
-            "Round {}".format(self.round()),
+            "Round:{: >2} | Cards Left:{: >2} | Withheld Card: {: >10} ".format(
+                self.round(), self.cards_left(), Card.render_card_number(self.held_card())),
             ""
         ]
         for idx, player in enumerate(self._players):
