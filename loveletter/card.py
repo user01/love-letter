@@ -40,7 +40,7 @@ class Card():
               2,  # Priest
               2,  # Baron
               2,  # Handmaid
-              1,  # Prince
+              2,  # Prince
               1,  # King
               1,  # Countess
               1]  # Princess
