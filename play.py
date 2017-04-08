@@ -75,6 +75,7 @@ def play(seed, previous_actions):
         except ValueError:
             print("Invalid move - Exit with Ctrl-C")
 
+    display(game, actions)
     print("Game Over")
 
 if __name__ == "__main__":
