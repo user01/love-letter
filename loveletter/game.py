@@ -17,7 +17,7 @@ class Game():
 
         total_playing = sum(
             [1 for player in players if PlayerTools.is_playing(player)])
-        self._game_active = total_playing > 1
+        self._game_active = total_playing > 1 and self.cards_left() > 0
 
     def players(self):
         """List of current players."""
@@ -35,9 +35,15 @@ class Game():
         """
         Card currently available to the next player.
 
-        Only valid if the game is not over.
+        Only valid if the game is not over (otherwise No Card)
         """
-        return self._deck[0]
+        return self._deck[0] if len(self._deck) > 1 else Card.noCard
+
+    def held_card(self):
+        """
+        Card withheld from the game
+        """
+        return self._deck[-1]
 
     def turn_index(self):
         """
@@ -54,6 +60,24 @@ class Game():
     def player_turn(self):
         """Player number of current player."""
         return self._turn_index % len(self._players)
+
+    def is_winner(self, idx):
+        """True iff that player has won the game"""
+        if self.active():
+            return False
+        player = self._players[idx]
+        if not PlayerTools.is_playing(player):
+            return False
+        other_scores = [
+            p.hand_card > player.hand_card for p in self._players if PlayerTools.is_playing(p)]
+        return sum(other_scores) == 0
+
+    def winner(self):
+        """Return the index of the winning player. -1 if none"""
+        for idx in range(len(self._players)):
+            if self.is_winner(idx):
+                return idx
+        return -1
 
     def _player(self):
         """Returns the current player"""
@@ -74,6 +98,16 @@ class Game():
     def over(self):
         """Return True if the game is over"""
         return not self.active()
+
+    def is_current_player_playing(self):
+        """True if the current player has not been eliminated"""
+        return PlayerTools.is_playing(self._player())
+
+    def skip_eliminated_player(self, throw=False):
+        """If the current player is eliminated, skip to next"""
+        if self.is_current_player_playing():
+            return self
+        return self.move(PlayerActionTools.blank(), throw)
 
     def move(self, action, throw=False):
         """Current player makes an action."""
@@ -283,7 +317,8 @@ class Game():
         strings = [
             "" + ("━" * 79),
             "Game is active" if self.active() else "Game is over",
-            "Round {}".format(self.round()),
+            "Round:{: >2} | Cards Left:{: >2} | Withheld Card: {: >10} ".format(
+                self.round(), self.cards_left(), Card.render_card_number(self.held_card())),
             ""
         ]
         for idx, player in enumerate(self._players):
@@ -295,10 +330,12 @@ class Game():
     def _to_str_player(self, idx, player):
         is_playing = " " if PlayerTools.is_playing(player) else "☠️"
         is_turn = "⭐" if self.player_turn() == idx else " "
-        draw_card = self.draw_card() if self.active() and self.player_turn() == idx else Card.noCard
+        draw_card = self.draw_card() if self.active(
+        ) and self.player_turn() == idx else Card.noCard
         draw_card_render = Card.render_card_number(draw_card)
         header = "Player {} {} {}".format(idx, is_turn, is_playing)
-        state = "   Current: {} {}".format(draw_card_render, PlayerTools.to_str(player))
+        state = "   Current: {} {}".format(
+            draw_card_render, PlayerTools.to_str(player))
         return [header, state]
 
     @staticmethod
