@@ -17,7 +17,7 @@ class Game():
 
         total_playing = sum(
             [1 for player in players if PlayerTools.is_playing(player)])
-        self._game_active = total_playing > 1
+        self._game_active = total_playing > 1 and self.cards_left() > 0
 
     def players(self):
         """List of current players."""
@@ -37,7 +37,7 @@ class Game():
 
         Only valid if the game is not over (otherwise No Card)
         """
-        return self._deck[0] if len(self._deck) > 2 else Card.noCard
+        return self._deck[0] if len(self._deck) > 1 else Card.noCard
 
     def held_card(self):
         """
