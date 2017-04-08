@@ -76,7 +76,7 @@ def play(seed, previous_actions):
             print("Invalid move - Exit with Ctrl-C")
 
     display(game, actions)
-    print("Game Over")
+    print("Game Over : Player {} Wins!".format(game.winner()))
 
 if __name__ == "__main__":
     play(ARGS.seed, ARGS.replay)

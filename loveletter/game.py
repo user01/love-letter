@@ -61,6 +61,24 @@ class Game():
         """Player number of current player."""
         return self._turn_index % len(self._players)
 
+    def is_winner(self, idx):
+        """True iff that player has won the game"""
+        if self.active():
+            return False
+        player = self._players[idx]
+        if not PlayerTools.is_playing(player):
+            return False
+        other_scores = [
+            p.hand_card > player.hand_card for p in self._players if PlayerTools.is_playing(p)]
+        return sum(other_scores) == 0
+
+    def winner(self):
+        """Return the index of the winning player. -1 if none"""
+        for idx in range(len(self._players)):
+            if self.is_winner(idx):
+                return idx
+        return -1
+
     def _player(self):
         """Returns the current player"""
         return self._players[self.player_turn()]

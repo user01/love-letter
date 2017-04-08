@@ -63,6 +63,7 @@ class TestGames(unittest.TestCase):
 
         self.assertEqual(game.cards_left(), 0)
         self.assertTrue(game.over())
+        self.assertEqual(game.winner(), 1)
 
 
 if __name__ == '__main__':
