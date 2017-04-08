@@ -45,6 +45,10 @@ def play(seed):
     """Play a game"""
     game = Game.new(4, seed)
     while game.active():
+        if not game.is_current_player_playing():
+            game = game.skip_eliminated_player()
+            continue
+
         display(game)
         print("  What card to play?")
 

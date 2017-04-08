@@ -75,6 +75,16 @@ class Game():
         """Return True if the game is over"""
         return not self.active()
 
+    def is_current_player_playing(self):
+        """True if the current player has not been eliminated"""
+        return PlayerTools.is_playing(self._player())
+
+    def skip_eliminated_player(self, throw=False):
+        """If the current player is eliminated, skip to next"""
+        if self.is_current_player_playing():
+            return self
+        return self.move(PlayerActionTools.blank(), throw)
+
     def move(self, action, throw=False):
         """Current player makes an action."""
         if self.over() or not self.is_action_valid(action):
@@ -295,10 +305,12 @@ class Game():
     def _to_str_player(self, idx, player):
         is_playing = " " if PlayerTools.is_playing(player) else "☠️"
         is_turn = "⭐" if self.player_turn() == idx else " "
-        draw_card = self.draw_card() if self.active() and self.player_turn() == idx else Card.noCard
+        draw_card = self.draw_card() if self.active(
+        ) and self.player_turn() == idx else Card.noCard
         draw_card_render = Card.render_card_number(draw_card)
         header = "Player {} {} {}".format(idx, is_turn, is_playing)
-        state = "   Current: {} {}".format(draw_card_render, PlayerTools.to_str(player))
+        state = "   Current: {} {}".format(
+            draw_card_render, PlayerTools.to_str(player))
         return [header, state]
 
     @staticmethod
