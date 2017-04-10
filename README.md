@@ -5,11 +5,16 @@
 
 Simulator and Agents for the game of [Love Letter](https://www.boardgamegeek.com/boardgame/129622/love-letter).
 
+Love Letter is a turn based card game where a player wins by eliminating the other players.
+
 Requirements are contained in `requirements.txt`. Install with `pip install -r requirements.txt`.
 
 ## Console Play
 
 Run with `python play.py`.
+
+![screen shot of console](assets/console.play.png "screen shot of console")
+
 
 ## Tests
 
