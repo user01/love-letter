@@ -160,6 +160,12 @@ class Game():
             seen_cards = np.zeros(8)
         return starting_cards - seen_cards
 
+    def state(self):
+        """
+        Combines player hand and remaining cards into one array.
+        """
+        return np.concatenate([self.state_hand()[0], self.state_hand()[1], self.remaining_cards()])
+
     def _reward(self, game, action):
         """
         Record current reward.
