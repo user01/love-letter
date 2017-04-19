@@ -140,17 +140,13 @@ class PlayerTools():
         return player.hand_card != 0
 
     @staticmethod
-
-
     def to_str(player):
         """Convert a player tuple into rendered string."""
         actions_str = " | ".join([PlayerActionTools.to_str(action)
                                   for action in player.actions if
                                   not PlayerActionTools.is_blank(action)])
-        for action in player.actions:
-            if not PlayerActionTools.is_blank(action):
-                cards.append(action[0])
         return "{} ┋┋ {}".format(Card.render_card_number(player.hand_card), actions_str)
+
     @staticmethod
     def to_np(player):
         """Convert a player tuple into a numpy array."""
