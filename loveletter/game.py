@@ -107,10 +107,33 @@ class Game():
         """If the current player is eliminated, skip to next"""
         if self.is_current_player_playing():
             return self
-        return self.move(PlayerActionTools.blank(), throw)
+        return self._move(PlayerActionTools.blank(), throw)
+
+    def _reward(self, game, action):
+        """
+        Record current reward.
+        """
+        if game.active():
+            if self.is_action_valid(action):
+                return 0
+            else:
+                return -1
+        elif game.winner() == self.turn_index():
+            return 30
+        return -10
 
     def move(self, action, throw=False):
-        """Current player makes an action."""
+        """Current player makes an action.
+
+        Returns (NewGame and Reward)<Game,int>
+        """
+        game = self._move(action)
+        return game, self._reward(game, action)
+
+    def _move(self, action, throw=False):
+        """Current player makes an action.
+
+        Returns (NewGame and Reward)<Game,int>"""
         if self.over() or not self.is_action_valid(action):
             return self._invalid_input(throw)
 

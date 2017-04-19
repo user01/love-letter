@@ -24,7 +24,7 @@ class TestGames(unittest.TestCase):
                 game = game.skip_eliminated_player()
             else:
                 action = action_sequence.pop()
-                game = game.move(action)
+                game = game._move(action)
 
         return game
 
@@ -32,24 +32,21 @@ class TestGames(unittest.TestCase):
         """Reach the end of a game by elimination"""
         game = Game.new(4, 0)
 
-        game = game.move(PlayerAction(
-            Card.guard, 1, Card.priest, Card.noCard))
+        game, _ = game.move(PlayerAction(Card.guard, 1, Card.priest, Card.noCard))
         game = game.skip_eliminated_player()
-        game = game.move(PlayerAction(
-            Card.guard, 3, Card.countess, Card.noCard))
-        game = game.move(PlayerAction(
-            Card.handmaid, 3, Card.noCard, Card.noCard))
+        game, _ = game.move(PlayerAction(Card.guard, 3, Card.countess, Card.noCard))
+        game, _ = game.move(PlayerAction(Card.handmaid, 3, Card.noCard, Card.noCard))
 
-        game = game.move(PlayerAction(
+        game, _ = game.move(PlayerAction(
             Card.countess, 0, Card.noCard, Card.noCard))
         game = game.skip_eliminated_player()
-        game = game.move(PlayerAction(
+        game, _ = game.move(PlayerAction(
             Card.baron, 3, Card.noCard, Card.noCard))
-        game = game.move(PlayerAction(
+        game, _= game.move(PlayerAction(
             Card.guard, 2, Card.handmaid, Card.noCard))
 
         self.assertFalse(game.over())
-        game = game.move(PlayerAction(
+        game, _ = game.move(PlayerAction(
             Card.princess, 0, Card.noCard, Card.noCard))
 
         self.assertEqual(game.cards_left(), 4)

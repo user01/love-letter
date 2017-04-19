@@ -5,8 +5,9 @@ import argparse
 
 import numpy as np
 
+from loveletter import game
 from loveletter.game import Game
-from loveletter.player import PlayerAction, PlayerActionTools
+from loveletter.player import PlayerAction, PlayerActionTools, PlayerTools
 from loveletter.card import Card
 
 
@@ -50,6 +51,22 @@ def get_action():
     return PlayerAction(discard, player_target, guess, 0)
 
 
+player_index = 1
+# def grab_reward():
+#     """
+#     Record current reward.
+#     """
+#     while Game.active() == True:
+#         # if Game.action() == _invalid_input(throw):
+#         #     return -1
+#         # else:
+#         return 0
+#     if Game.winner() == player_index:
+#         return 30
+#     else:
+#         return -10
+
+
 def play(seed, previous_actions):
     """Play a game"""
     game = Game.new(4, seed)
@@ -57,6 +74,7 @@ def play(seed, previous_actions):
         np.array([int(i) for i in previous_actions.split(",")], dtype=np.uint8)
     previous_actions = PlayerActionTools.from_np_many(previous_actions)[::-1]
     actions = []
+    rewards = []
     while game.active():
         if not game.is_current_player_playing():
             game = game.skip_eliminated_player()
@@ -70,12 +88,21 @@ def play(seed, previous_actions):
             else:
                 print("  What card to play?")
                 action = get_action()
+                reward = 0
             actions.append(action)
+            rewards.append(reward)
             game = game.move(action)
         except ValueError:
+            reward = -1
             print("Invalid move - Exit with Ctrl-C")
 
     display(game, actions)
+    if game.winner() == player_index:
+        reward = 30
+    else:
+        reward = -10
+    rewards.append(reward)
+    print(rewards)
     print("Game Over : Player {} Wins!".format(game.winner()))
 
 if __name__ == "__main__":
