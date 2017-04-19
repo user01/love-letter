@@ -130,6 +130,36 @@ class Game():
 
         return card1, card2
 
+    def remaining_cards(self):
+        """
+        Looks at discarded cards and returns probabilities of outstanding cards.
+        """
+        # starting array
+        starting_cards = np.ones(8)
+
+        # weights array
+        weights_of_cards = np.asarray([1 / 5, 1 / 2, 1 / 2, 1 / 2, 1 / 2, 1, 1, 1])
+
+        # seen cards
+        seen_cards = np.zeros(8)
+
+        # grab discarded cards from each player
+        cards = []
+        for action in self._player().actions:
+            if not PlayerActionTools.is_blank(action):
+                cards.append(action[0])
+
+        # loop through discarded cards adding them to the seen cards array
+        for card in cards:
+            # array is zero indexed but card values are one indexed
+            seen_cards[card - 1] += 1
+
+        if sum(seen_cards) > 0:
+            seen_cards = seen_cards * weights_of_cards
+        else:
+            seen_cards = np.zeros(8)
+        return starting_cards - seen_cards
+
     def _reward(self, game, action):
         """
         Record current reward.
