@@ -2,7 +2,7 @@
 """
 Love Letter Game object
 """
-
+import numpy as np
 from loveletter.card import Card
 from loveletter.player import PlayerTools, PlayerAction, PlayerActionTools
 
@@ -108,6 +108,27 @@ class Game():
         if self.is_current_player_playing():
             return self
         return self._move(PlayerActionTools.blank(), throw)
+
+    def state_hand(self):
+        """
+        Grab whats in players hand and record it as a one hot encoded array.
+        """
+        # whats in hand
+        # how exactly do i reference this card
+        card_number1 = self._player().hand_card
+        card_number2 = self.deck()[0]
+
+        cardnumbers = [card_number1, card_number2]
+        cardnumbers.sort()
+        # initialize arrays
+        card1 = np.zeros(8)
+        card2 = np.zeros(8)
+
+        # encode whats in hand to array
+        card1[cardnumbers[0] - 1] = 1
+        card2[cardnumbers[1] - 1] = 1
+
+        return card1, card2
 
     def _reward(self, game, action):
         """
