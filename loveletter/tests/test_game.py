@@ -31,10 +31,10 @@ class TestBasic(unittest.TestCase):
         self.assertFalse(game.over())
 
     def test_move_guard_failure(self):
-        """Getting a guard _move, with a wrong guess"""
+        """Getting a guard move, with a wrong guess"""
         game = Game.new()
         action = PlayerAction(Card.guard, 1, Card.handmaid, 0)
-        game = game._move(action)
+        game = game.move(action)
 
         self.assertEqual(game.round(), 0)
         self.assertEqual(game.player_turn(), 1)
@@ -54,11 +54,35 @@ class TestBasic(unittest.TestCase):
         for action in player.actions[1:]:
             self.assertTrue(PlayerActionTools.is_blank(action))
 
+    def test_move_guard_guess_guard(self):
+        """Getting a guard move and guessing guard"""
+        game = Game.new()
+        action = PlayerAction(Card.guard, 1, Card.guard, 0)
+        game = game.move(action)
+
+        self.assertEqual(game.round(), 0)
+        self.assertEqual(game.player_turn(), 0)
+        self.assertEqual(game.cards_left(), 11)
+        self.assertTrue(game.active())
+        self.assertFalse(game.over())
+
+        players = game.players()
+        player = players[0]
+        target = players[1]
+        recent_action = player.actions[0]
+
+        self.assertTrue(PlayerTools.is_playing(player))
+        self.assertEqual(player.hand_card, Card.handmaid)
+        self.assertEqual(game.deck()[0], Card.guard)
+        self.assertTrue(PlayerActionTools.is_blank(recent_action))
+        for action in player.actions:
+            self.assertTrue(PlayerActionTools.is_blank(action))
+
     def test_move_guard_success(self):
-        """Getting a guard _move, with a right guess"""
+        """Getting a guard move, with a right guess"""
         game = Game.new()
         action = PlayerAction(Card.guard, 3, Card.handmaid, 0)
-        game = game._move(action)
+        game = game.move(action)
 
         self.assertEqual(game.round(), 0)
         self.assertEqual(game.player_turn(), 1)
@@ -79,11 +103,11 @@ class TestBasic(unittest.TestCase):
             self.assertTrue(PlayerActionTools.is_blank(action))
 
     def test_move_priest(self):
-        """Getting a priest _move"""
+        """Getting a priest move"""
         game = Game.new(4, 5)
         action = PlayerAction(Card.priest, 1, Card.noCard, Card.noCard)
         action_expected = PlayerAction(Card.priest, 1, Card.noCard, Card.guard)
-        game = game._move(action)
+        game = game.move(action)
 
         self.assertEqual(game.round(), 0)
         self.assertEqual(game.player_turn(), 1)
@@ -103,10 +127,10 @@ class TestBasic(unittest.TestCase):
             self.assertTrue(PlayerActionTools.is_blank(action))
 
     def test_move_baron_success(self):
-        """Getting a baron _move, with a success"""
+        """Getting a baron move, with a success"""
         game = Game.new(4, 48)
         action = PlayerAction(Card.baron, 3, Card.noCard, Card.noCard)
-        game = game._move(action)
+        game = game.move(action)
 
         players = game.players()
         player = players[0]
@@ -126,10 +150,10 @@ class TestBasic(unittest.TestCase):
             self.assertTrue(PlayerActionTools.is_blank(action))
 
     def test_move_baron_failure(self):
-        """Getting a baron _move, with a failure"""
+        """Getting a baron move, with a failure"""
         game = Game.new(4, 48)
         action = PlayerAction(Card.baron, 1, Card.noCard, Card.noCard)
-        game = game._move(action)
+        game = game.move(action)
 
         players = game.players()
         player = players[0]
@@ -150,7 +174,7 @@ class TestBasic(unittest.TestCase):
         """Deploy the handmaid and survive attack"""
         game = Game.new(4, 2)
         action = PlayerAction(Card.handmaid, 0, Card.noCard, Card.noCard)
-        game = game._move(action)
+        game = game.move(action)
 
         players = game.players()
         player = players[0]
@@ -161,7 +185,7 @@ class TestBasic(unittest.TestCase):
             self.assertTrue(PlayerActionTools.is_blank(action))
 
         action_attack = PlayerAction(Card.guard, 0, Card.prince, Card.noCard)
-        game = game._move(action_attack)
+        game = game.move(action_attack)
 
         players = game.players()
         target = players[0]
@@ -182,7 +206,7 @@ class TestBasic(unittest.TestCase):
         game = Game.new(4, 2)
         action = PlayerAction(Card.prince, 0, Card.noCard, Card.noCard)
         action_other = PlayerAction(Card.handmaid, 0, Card.noCard, Card.noCard)
-        game = game._move(action)
+        game = game.move(action)
 
         players = game.players()
         player = players[0]
@@ -199,7 +223,7 @@ class TestBasic(unittest.TestCase):
         game = Game.new(4, 2)
         action = PlayerAction(Card.prince, 1, Card.noCard, Card.noCard)
         action_target = PlayerAction(Card.guard, 0, Card.noCard, Card.noCard)
-        game = game._move(action)
+        game = game.move(action)
 
         players = game.players()
         player = players[0]
@@ -217,11 +241,34 @@ class TestBasic(unittest.TestCase):
         for action in target.actions[1:]:
             self.assertTrue(PlayerActionTools.is_blank(action))
 
+    def test_move_prince_other_princess(self):
+        """Use prince to force another to discard the princess"""
+        game = Game.new(4, 34)
+        action = PlayerAction(Card.prince, 3, Card.noCard, Card.noCard)
+        action_target = PlayerAction(Card.princess, 0, Card.noCard, Card.noCard)
+        game = game.move(action)
+
+        players = game.players()
+        player = players[0]
+        target = players[3]
+
+        self.assertTrue(PlayerTools.is_playing(player))
+        self.assertFalse(PlayerActionTools.is_blank(player.actions[0]))
+        self.assertEqual(player.actions[0], action)
+        for action in player.actions[1:]:
+            self.assertTrue(PlayerActionTools.is_blank(action))
+
+        self.assertFalse(PlayerTools.is_playing(target))
+        self.assertFalse(PlayerActionTools.is_blank(target.actions[0]))
+        self.assertEqual(target.actions[0], action_target)
+        for action in target.actions[1:]:
+            self.assertTrue(PlayerActionTools.is_blank(action))
+
     def test_move_king(self):
         """Use king to swap hands with the target"""
         game = Game.new(4, 0)
         action = PlayerAction(Card.king, 1, Card.noCard, Card.noCard)
-        game = game._move(action)
+        game = game.move(action)
 
         players = game.players()
         player = players[0]
@@ -243,7 +290,7 @@ class TestBasic(unittest.TestCase):
         """Commit suicide by discarding the princess"""
         game = Game.new(4, 11)
         action = PlayerAction(Card.princess, 0, Card.noCard, Card.noCard)
-        game = game._move(action)
+        game = game.move(action)
 
         players = game.players()
         player = players[0]
@@ -258,6 +305,17 @@ class TestBasic(unittest.TestCase):
         for action in player.actions[2:]:
             self.assertTrue(PlayerActionTools.is_blank(action))
 
+    def test_last_player_win(self):
+        """Win the game by knocking out the opposing player"""
+        game = Game.new(2, 3)
+        action = PlayerAction(Card.guard, 1, Card.king, 0)
+        game = game.move(action)
+
+        self.assertEqual(game.round(), 0)
+        self.assertEqual(game.cards_left(), 12)
+        self.assertFalse(game.active())
+        self.assertTrue(game.over())
+        self.assertEqual(0, game.winner())
 
 if __name__ == '__main__':
     unittest.main()
