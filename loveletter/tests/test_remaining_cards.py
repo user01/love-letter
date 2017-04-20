@@ -6,7 +6,7 @@ import numpy as np
 from loveletter.game import Game
 from loveletter.card import Card
 from loveletter.player import PlayerAction, PlayerActionTools
-
+from loveletter.tests.test_games import TestGames
 
 class TestRemainingCards(unittest.TestCase):
     """Love Letter Games"""
