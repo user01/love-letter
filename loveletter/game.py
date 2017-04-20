@@ -114,7 +114,6 @@ class Game():
         Grab whats in players hand and record it as a one hot encoded array.
         """
         # whats in hand
-        # how exactly do i reference this card
         card_number1 = self._player().hand_card
         card_number2 = self.deck()[0]
 
