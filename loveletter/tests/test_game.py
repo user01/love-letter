@@ -309,8 +309,9 @@ class TestBasic(unittest.TestCase):
         """Win the game by knocking out the opposing player"""
         game = Game.new(2, 3)
         action = PlayerAction(Card.guard, 1, Card.king, 0)
-        game, _ = game.move(action)
 
+        game, _ = game.move(action)
+  
         self.assertEqual(game.round(), 0)
         self.assertEqual(game.cards_left(), 12)
         self.assertFalse(game.active())
