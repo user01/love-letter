@@ -34,7 +34,7 @@ class TestBasic(unittest.TestCase):
         """Getting a guard move, with a wrong guess"""
         game = Game.new()
         action = PlayerAction(Card.guard, 1, Card.handmaid, 0)
-        game = game.move(action)
+        game, _ = game.move(action)
 
         self.assertEqual(game.round(), 0)
         self.assertEqual(game.player_turn(), 1)
@@ -58,7 +58,7 @@ class TestBasic(unittest.TestCase):
         """Getting a guard move and guessing guard"""
         game = Game.new()
         action = PlayerAction(Card.guard, 1, Card.guard, 0)
-        game = game.move(action)
+        game, _ = game.move(action)
 
         self.assertEqual(game.round(), 0)
         self.assertEqual(game.player_turn(), 0)
@@ -82,7 +82,7 @@ class TestBasic(unittest.TestCase):
         """Getting a guard move, with a right guess"""
         game = Game.new()
         action = PlayerAction(Card.guard, 3, Card.handmaid, 0)
-        game = game.move(action)
+        game, _ = game.move(action)
 
         self.assertEqual(game.round(), 0)
         self.assertEqual(game.player_turn(), 1)
@@ -107,7 +107,7 @@ class TestBasic(unittest.TestCase):
         game = Game.new(4, 5)
         action = PlayerAction(Card.priest, 1, Card.noCard, Card.noCard)
         action_expected = PlayerAction(Card.priest, 1, Card.noCard, Card.guard)
-        game = game.move(action)
+        game, _ = game.move(action)
 
         self.assertEqual(game.round(), 0)
         self.assertEqual(game.player_turn(), 1)
@@ -130,7 +130,7 @@ class TestBasic(unittest.TestCase):
         """Getting a baron move, with a success"""
         game = Game.new(4, 48)
         action = PlayerAction(Card.baron, 3, Card.noCard, Card.noCard)
-        game = game.move(action)
+        game, _ = game.move(action)
 
         players = game.players()
         player = players[0]
@@ -153,7 +153,7 @@ class TestBasic(unittest.TestCase):
         """Getting a baron move, with a failure"""
         game = Game.new(4, 48)
         action = PlayerAction(Card.baron, 1, Card.noCard, Card.noCard)
-        game = game.move(action)
+        game, _ = game.move(action)
 
         players = game.players()
         player = players[0]
@@ -174,7 +174,7 @@ class TestBasic(unittest.TestCase):
         """Deploy the handmaid and survive attack"""
         game = Game.new(4, 2)
         action = PlayerAction(Card.handmaid, 0, Card.noCard, Card.noCard)
-        game = game.move(action)
+        game, _ = game.move(action)
 
         players = game.players()
         player = players[0]
@@ -185,7 +185,7 @@ class TestBasic(unittest.TestCase):
             self.assertTrue(PlayerActionTools.is_blank(action))
 
         action_attack = PlayerAction(Card.guard, 0, Card.prince, Card.noCard)
-        game = game.move(action_attack)
+        game, _ = game.move(action_attack)
 
         players = game.players()
         target = players[0]
@@ -206,7 +206,7 @@ class TestBasic(unittest.TestCase):
         game = Game.new(4, 2)
         action = PlayerAction(Card.prince, 0, Card.noCard, Card.noCard)
         action_other = PlayerAction(Card.handmaid, 0, Card.noCard, Card.noCard)
-        game = game.move(action)
+        game, _ = game.move(action)
 
         players = game.players()
         player = players[0]
@@ -223,7 +223,7 @@ class TestBasic(unittest.TestCase):
         game = Game.new(4, 2)
         action = PlayerAction(Card.prince, 1, Card.noCard, Card.noCard)
         action_target = PlayerAction(Card.guard, 0, Card.noCard, Card.noCard)
-        game = game.move(action)
+        game, _ = game.move(action)
 
         players = game.players()
         player = players[0]
@@ -246,7 +246,7 @@ class TestBasic(unittest.TestCase):
         game = Game.new(4, 34)
         action = PlayerAction(Card.prince, 3, Card.noCard, Card.noCard)
         action_target = PlayerAction(Card.princess, 0, Card.noCard, Card.noCard)
-        game = game.move(action)
+        game, _ = game.move(action)
 
         players = game.players()
         player = players[0]
@@ -268,7 +268,7 @@ class TestBasic(unittest.TestCase):
         """Use king to swap hands with the target"""
         game = Game.new(4, 0)
         action = PlayerAction(Card.king, 1, Card.noCard, Card.noCard)
-        game = game.move(action)
+        game, _ = game.move(action)
 
         players = game.players()
         player = players[0]
@@ -290,7 +290,7 @@ class TestBasic(unittest.TestCase):
         """Commit suicide by discarding the princess"""
         game = Game.new(4, 11)
         action = PlayerAction(Card.princess, 0, Card.noCard, Card.noCard)
-        game = game.move(action)
+        game, _ = game.move(action)
 
         players = game.players()
         player = players[0]
@@ -309,8 +309,9 @@ class TestBasic(unittest.TestCase):
         """Win the game by knocking out the opposing player"""
         game = Game.new(2, 3)
         action = PlayerAction(Card.guard, 1, Card.king, 0)
-        game = game.move(action)
 
+        game, _ = game.move(action)
+  
         self.assertEqual(game.round(), 0)
         self.assertEqual(game.cards_left(), 12)
         self.assertFalse(game.active())

@@ -2,7 +2,7 @@
 """
 Love Letter Game object
 """
-
+import numpy as np
 from loveletter.card import Card
 from loveletter.player import PlayerTools, PlayerAction, PlayerActionTools
 
@@ -107,10 +107,89 @@ class Game():
         """If the current player is eliminated, skip to next"""
         if self.is_current_player_playing():
             return self
-        return self.move(PlayerActionTools.blank(), throw)
+        return self._move(PlayerActionTools.blank(), throw)
+
+    def state_hand(self):
+        """
+        Grab whats in players hand and record it as a one hot encoded array.
+        """
+        # whats in hand
+        card_number1 = self._player().hand_card
+        card_number2 = self.deck()[0]
+
+        cardnumbers = [card_number1, card_number2]
+        cardnumbers.sort()
+        # initialize arrays
+        card1 = np.zeros(8)
+        card2 = np.zeros(8)
+
+        # encode whats in hand to array
+        card1[cardnumbers[0] - 1] = 1
+        card2[cardnumbers[1] - 1] = 1
+
+        return card1, card2
+
+    def remaining_cards(self):
+        """
+        Looks at discarded cards and returns probabilities of outstanding cards.
+        """
+        # starting array
+        starting_cards = np.ones(8)
+
+        # weights array
+        weights_of_cards = np.asarray([1 / 5, 1 / 2, 1 / 2, 1 / 2, 1 / 2, 1, 1, 1])
+
+        # seen cards
+        seen_cards = np.zeros(8)
+
+        # grab discarded cards from each player
+        cards = []
+        for action in self._player().actions:
+            if not PlayerActionTools.is_blank(action):
+                cards.append(action[0])
+
+        # loop through discarded cards adding them to the seen cards array
+        for card in cards:
+            # array is zero indexed but card values are one indexed
+            seen_cards[card - 1] += 1
+
+        if sum(seen_cards) > 0:
+            seen_cards = seen_cards * weights_of_cards
+        else:
+            seen_cards = np.zeros(8)
+        return starting_cards - seen_cards
+
+    def state(self):
+        """
+        Combines player hand and remaining cards into one array.
+        """
+        return np.concatenate([self.state_hand()[0], self.state_hand()[1], self.remaining_cards()])
+
+    def _reward(self, game, action):
+        """
+        Record current reward.
+        """
+        if game.active():
+            if self.is_action_valid(action):
+                return 0
+            else:
+                return -1
+        elif game.winner() == self.turn_index():
+            return 30
+        return -10
 
     def move(self, action, throw=False):
-        """Current player makes an action."""
+        """Current player makes an action.
+
+        Returns (NewGame and Reward)<Game,int>
+        """
+        game = self._move(action)
+        return game, self._reward(game, action)
+
+    def _move(self, action, throw=False):
+        """Current player makes an action.
+
+        Returns (NewGame and Reward)<Game,int>"""
         if self.over() or not self.is_action_valid(action):
             return self._invalid_input(throw)
 
