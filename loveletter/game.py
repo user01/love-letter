@@ -89,6 +89,12 @@ class Game():
                 if idx != self.player_turn() and
                 PlayerTools.is_playing(player)]
 
+    def opponent_turn(self):
+        """Returns the opposing players indices"""
+        return [idx for idx, player in enumerate(self._players)
+                if idx != self.player_turn() and
+                PlayerTools.is_playing(player)]
+
     def cards_left(self):
         """
         Number of cards left in deck to distribute
