@@ -93,3 +93,6 @@ ENV/
 # VSCode settings
 .vscode/
 cSpell.json
+
+# generated files
+arena.results.csv
