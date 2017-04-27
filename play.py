@@ -71,7 +71,7 @@ def play(seed, previous_actions):
                 print("  What card to play?")
                 action = get_action()
             actions.append(action)
-            game = game.move(action)
+            game, _ = game.move(action)
         except ValueError:
             print("Invalid move - Exit with Ctrl-C")
 
