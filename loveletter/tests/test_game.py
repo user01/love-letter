@@ -82,6 +82,7 @@ class TestBasic(unittest.TestCase):
         """Getting a guard move, with a right guess"""
         game = Game.new()
         action = PlayerAction(Card.guard, 3, Card.handmaid, 0)
+        self.assertEqual(3, len(game.opponents()))
         game, _ = game.move(action)
 
         self.assertEqual(game.round(), 0)
@@ -94,6 +95,7 @@ class TestBasic(unittest.TestCase):
         player = players[0]
         target = players[3]
         recent_action = player.actions[0]
+        self.assertEqual(2, len(game.opponents()))
 
         self.assertFalse(PlayerTools.is_playing(target))
         self.assertEqual(recent_action, action)
@@ -311,7 +313,7 @@ class TestBasic(unittest.TestCase):
         action = PlayerAction(Card.guard, 1, Card.king, 0)
 
         game, _ = game.move(action)
-  
+
         self.assertEqual(game.round(), 0)
         self.assertEqual(game.cards_left(), 12)
         self.assertFalse(game.active())
