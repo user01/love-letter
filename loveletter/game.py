@@ -175,6 +175,8 @@ class Game():
     def state(self):
         """
         Combines player hand and remaining cards into one array.
+
+        returns numpy float 1d of length 24
         """
         return np.concatenate([self.state_hand()[0], self.state_hand()[1], self.remaining_cards()])
 
