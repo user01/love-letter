@@ -47,19 +47,16 @@ class AgentDQN(Agent):
     def _move(self, game):
         '''Return move which ends in score hole'''
         self._idx = self._idx + 1
-        ModelDQN.Seed(self._seed + self._idx)
+        seed = self._seed + self._idx
+        ModelDQN.Seed(seed)
+        state = torch.from_numpy(game.state()).type(torch.FloatTensor)
 
-        state = TrainerDQN.game_to_state(game_clone)
-        action = self._model(
+        scores = self._model(
             ModelDQN.Variable(state.unsqueeze(0))
-        ).data.cpu()
-        move_options = Agent.valid_actions(game_clone, self._idx)
-        move_values = action[0][torch.LongTensor(move_options)].tolist()
-        move_idx = action[0][torch.LongTensor(move_options)].max(0)[
-            1].tolist()[0]
-        move = move_options[move_idx]
+        ).data.cpu().tolist()[0]
+        action, _, _ = AgentDQN.action_by_score(game, scores, seed)
 
-        return Game.rotate_board(rot_flag, move)
+        return action
 
     @staticmethod
     def action_by_score(game, scores, seed=451):
