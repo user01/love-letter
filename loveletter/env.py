@@ -1,3 +1,5 @@
+from operator import itemgetter
+
 import gym
 from gym import spaces
 from gym.utils import seeding
@@ -94,33 +96,59 @@ class LoveLetterEnv(gym.Env):
 
         return game_current, 0
 
-    def action_from_index(self, action_index):
-        """Returns valid (idx, actions) based on a current game"""
 
-        action_candidates = self.actions_set()
+    def action_by_score(self, scores, game=None):
+        """
+        Returns best action based on assigned scores
+
+        return (action, score, idx)
+        """
+        if len(scores) != 15:
+            raise Exception("Invalid scores length")
+        game = self._game if game is None else game
+
+        assert game.active()
+        actions_possible = self.actions_set(game)
+
+        actions = [(action, score, idx) for action, score, idx in
+                   zip(actions_possible,
+                       scores,
+                       range(len(actions_possible)))
+                   if game.is_action_valid(action)]
+
+        action = max(actions, key=itemgetter(2))
+        return action
+
+    def action_from_index(self, action_index, game=None):
+        """Returns valid (idx, actions) based on a current game"""
+        game = self._game if game is None else game
+
+        action_candidates = self.actions_set(game)
 
         actions = [(idx, action) for idx, action in
                    enumerate(action_candidates)
-                   if self._game.is_action_valid(action) and idx == action_index]
+                   if game.is_action_valid(action) and idx == action_index]
 
         return actions[0][1] if len(actions) == 1 else None
 
-    def actions_possible(self):
+    def actions_possible(self, game=None):
         """Returns valid (idx, actions) based on a current game"""
+        game = self._game if game is None else game
 
-        action_candidates = self.actions_set()
+        action_candidates = self.actions_set(game)
 
         actions = [(idx, action) for idx, action in
                    enumerate(action_candidates)
-                   if self._game.is_action_valid(action)]
+                   if game.is_action_valid(action)]
 
         return actions
 
-    def actions_set(self):
+    def actions_set(self, game=None):
         """Returns all actions for a game"""
+        game = self._game if game is None else game
 
-        player_self = self._game.player_turn()
-        opponents = self._game.opponent_turn()
+        player_self = game.player_turn()
+        opponents = game.opponent_turn()
 
         actions_possible = [
             PlayerAction(Card.guard,
