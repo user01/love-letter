@@ -58,10 +58,10 @@ def train(epochs, path_output, path_input=None, verbose=True):
     trainer = TrainerDQN(path_input,
                          seed=451,
                          batch_size=2048,
-                         gamma=0.9,
+                         gamma=0.999,
                          eps_start=0.9,
                          eps_end=0.05,
-                         eps_decay=3000,
+                         eps_decay=1000,
                          replay_size=25000,
                          learning_rate=0.02)
 

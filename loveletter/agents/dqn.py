@@ -372,15 +372,16 @@ class ModelDQN(nn.Module):
 
     def __init__(self):
         super(ModelDQN, self).__init__()
-        self.layer1 = nn.Linear(24, 32)
-        self.layer2 = nn.Linear(32, 64)
-        self.layer3 = nn.Linear(64, 32)
-        self.layer4 = nn.Linear(32, 15)
+        self.layer1 = nn.Linear(24, 2048)
+        self.layer2 = nn.Linear(2048, 4096)
+        self.layer3 = nn.Linear(4096, 2048)
+        self.layer4 = nn.Linear(2048, 15)
+        self.dropout = nn.Dropout(p=0.2)
 
     def forward(self, x):
-        x = F.relu(self.layer1(x))
-        x = F.relu(self.layer2(x))
-        x = F.relu(self.layer3(x))
+        x = F.relu(self.dropout(self.layer1(x)))
+        x = F.relu(self.dropout(self.layer2(x)))
+        x = F.relu(self.dropout(self.layer3(x)))
         x = self.layer4(x)
         return x
 
