@@ -61,13 +61,13 @@ def train(epochs, path_output, path_input=None, verbose=True):
                          gamma=0.9,
                          eps_start=0.9,
                          eps_end=0.05,
-                         eps_decay=40000,
+                         eps_decay=3000,
                          replay_size=25000,
                          learning_rate=0.02)
 
     for epoch in range(starting_epoch + 1, epochs):
         print(" Training Epoch {}".format(epoch))
-        trainer.train(4500, print_mod=500)
+        trainer.train(10000, print_mod=500)
         trainer.write_state_to_path(
             "{}.epoch.{:0>8}".format(path_output, epoch))
         trainer.write_state_to_path(path_output)
