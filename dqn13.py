@@ -62,13 +62,19 @@ class ReplayMemory(object):
         return len(self.memory)
 
 def to_tensor(ndarray, volatile=False):
-    return Variable(torch.from_numpy(ndarray), volatile=volatile).float()
+    v = Variable(torch.from_numpy(ndarray), volatile=volatile).float()
+    if torch.cuda.is_available():
+        v = v.cuda()
+    return v
+
 
 def deep_q_learning(num_episodes=10, batch_size=100,
                     discount_factor=0.95, epsilon=0.1, epsilon_decay=0.95):
 
     # Q-Network and memory
     net = Net()
+    if torch.cuda.is_available():
+        net = net.cuda()
     memory = ReplayMemory(10000)
 
     # Loss and Optimizer
