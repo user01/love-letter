@@ -214,7 +214,7 @@ class TrainerDQN():
                 time_last = time.time()
             game = Game.new(4, idx)
 
-            while game.active():
+            while game.active() and game.is_current_player_playing():
                 # Select and perform an action
                 actions += 1
                 action, action_idx = self._select_action(game)
@@ -223,8 +223,9 @@ class TrainerDQN():
 
                 # Observe states
                 state_current = torch.from_numpy(game.state())
-                state_next = torch.FloatTensor([-1] + [0] * 23) if \
-                    game_next.over() else torch.from_numpy(game_next.state())
+                state_next = None if game_next.over() else torch.from_numpy(game_next.state())
+                # print(game_next.over())
+                # print(state_next)
 
                 # Store the transition in memory
                 self._memory.push(state_current,
@@ -253,13 +254,15 @@ class TrainerDQN():
         if not game.is_action_valid(action):
             return game, -1
 
-        player_idx = game.turn_index()
+        player_idx = game.player_turn()
         game_current, _ = game.move(action)
-        while game_current.active() and game_current.turn_index() != player_idx:
+        while game_current.active() and game_current.player_turn() != player_idx:
             if game_current.is_current_player_playing():
                 game_current, _ = game_current.move(agent.move(game_current))
             else:
                 game_current = game_current.skip_eliminated_player()
+
+        # print("Round", game.round(), '->', game_current.round())
 
         if game_current.over():
             if game_current.winner() == player_idx:
@@ -271,78 +274,57 @@ class TrainerDQN():
 
     def _optimize_model(self):
 
-        if not self._memory.full:
+        if len(self._memory) < self._BATCH_SIZE:
             return
-        (state_batch, action_batch, state_next_batch, reward_batch) = \
-            self._memory.sample(self._BATCH_SIZE)
-
-        indices_normal = []
-        indices_final = []
-        for idx, value in enumerate(state_next_batch[:, 0]):
-            if value != -1:
-                indices_normal.append(idx)
-        if len(indices_normal) < 1:
-            # escape on randomly empty set
-            return
+        transitions = self._memory.sample(self._BATCH_SIZE)
+        # Transpose the batch (see http://stackoverflow.com/a/19343/3343043 for
+        # detailed explanation).
+        batch = Transition(*zip(*transitions))
 
         # Compute a mask of non-final states and concatenate the batch elements
-        mask_normal = torch.LongTensor(indices_normal)
-        mask_bit_normal = state_next_batch[:, 0] != -1
+        non_final_mask = torch.ByteTensor(
+            tuple(map(lambda s: s is not None, batch.next_state)))
         if ModelDQN.USE_CUDA:
-            mask_bit_normal = mask_bit_normal.cuda()
-            # mask_normal = mask_normal.cuda()
-
-        # We don't want to backprop through the expected action values and
-        # volatile will save us on temporarily changing the model parameters'
+            non_final_mask = non_final_mask.cuda()
+        # We don't want to backprop through the expected action values and volatile
+        # will save us on temporarily changing the model parameters'
         # requires_grad to False!
-        state_batch = ModelDQN.Variable(state_batch)
-        action_batch = ModelDQN.Variable(action_batch)
-        reward_batch = ModelDQN.Variable(reward_batch)
+        if len(batch.next_state) < 1:
+            non_final_next_states = ModelDQN.Variable(torch.cat([s for s in batch.next_state
+                                                        if s is not None]),
+                                                        volatile=True)
+            print("NONSKIP")
+        else:
+            print("SKIP")
+            return
+        state_batch = ModelDQN.Variable(torch.cat(batch.state))
+        action_batch = ModelDQN.Variable(torch.cat(batch.action))
+        reward_batch = ModelDQN.Variable(torch.cat(batch.reward))
 
         # Compute Q(s_t, a) - the model computes Q(s_t), then we select the
         # columns of actions taken
-        state_action_values = self._model(state_batch)
-        state_action_values = state_action_values.gather(1, action_batch)
+        state_action_values = model(state_batch).gather(1, action_batch)
 
         # Compute V(s_{t+1}) for all next states.
-        next_state_values = ModelDQN.Variable(torch.zeros(self._BATCH_SIZE))
-        state_next_batch_normal = ModelDQN.Variable(
-            state_next_batch.index_select(0, mask_normal), True)
-
-        next_state_values[mask_bit_normal] = self._model(
-            state_next_batch_normal).max(1)[0]
-
+        next_state_values = Variable(torch.zeros(self._BATCH_SIZE))
+        next_state_values[non_final_mask] = model(non_final_next_states).max(1)[0]
         # Now, we don't want to mess up the loss with a volatile flag, so let's
         # clear it. After this, we'll just end up with a Variable that has
         # requires_grad=False
-        # next_state_values.volatile = False
+        next_state_values.volatile = False
         # Compute the expected Q values
-        expected_state_action_values = (next_state_values * self._GAMMA) + \
-            reward_batch
+        expected_state_action_values = (next_state_values * GAMMA) + reward_batch
 
         # Compute Huber loss
-        loss = F.smooth_l1_loss(state_action_values,
-                                expected_state_action_values)
-
-        # if self._memory.position % 200 == 0:
-        #     print("Loss: ", loss.data[0])
+        loss = F.smooth_l1_loss(state_action_values, expected_state_action_values)
 
         # Optimize the model
-        self._optimizer.zero_grad()
+        optimizer.zero_grad()
         loss.backward()
-        for param in self._model.parameters():
+        for param in model.parameters():
             param.grad.data.clamp_(-1, 1)
-        self._optimizer.step()
+        optimizer.step()
 
-    @staticmethod
-    def game_to_state(game):
-        """Resolve a game's current state to a model input state"""
-        return torch.FloatTensor(game._board[0:6] + game._board[7:13]).div(48)
-
-
-    @staticmethod
-    def action_tensor_to_int(action):
-        return action[0]
 
     def _select_action(self, game):
         """
@@ -414,36 +396,18 @@ class ReplayMemory(object):
 
     def __init__(self, capacity):
         self.capacity = capacity
+        self.memory = []
         self.position = 0
-        self.states = torch.zeros(capacity, 24)
-        self.actions = torch.zeros(capacity, 1).type(torch.LongTensor)
-        self.states_next = torch.zeros(capacity, 24)
-        self.rewards = torch.zeros(capacity, 1)
-        self.full = False
-        if ModelDQN.USE_CUDA:
-            self.states.cuda()
-            self.actions.cuda()
-            self.states_next.cuda()
-            self.rewards.cuda()
 
-    def push(self, state, action, state_next, reward):
+    def push(self, *args):
         """Saves a transition."""
-        self.states[self.position] = state
-        self.actions[self.position] = action
-        self.states_next[self.position] = state_next
-        self.rewards[self.position] = reward
+        if len(self.memory) < self.capacity:
+            self.memory.append(None)
+        self.memory[self.position] = Transition(*args)
         self.position = (self.position + 1) % self.capacity
-        self.full = self.full or self.position == 0
 
     def sample(self, batch_size):
-        """Sample from the memories"""
-        rand_batch = torch.randperm(self.capacity)
-        index = torch.split(rand_batch, batch_size)[0]
-        states_batch = self.states[index]
-        action_batch = self.actions[index]
-        states_next_batch = self.states_next[index]
-        rewards_batch = self.rewards[index]
-        return (states_batch, action_batch, states_next_batch, rewards_batch)
+        return random.sample(self.memory, batch_size)
 
     def __len__(self):
-        return self.capacity if self.full else self.position
+        return len(self.memory)
