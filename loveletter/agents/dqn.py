@@ -207,7 +207,7 @@ class TrainerDQN():
             # Initialize the environment and state
             if idx % print_mod == 0 or time.time() - time_last > 30:
                 sys.stdout.write(
-                    " {:0>5}/{:0>5}/{:0>5}:".format(self._steps_done,
+                    " steps:{:0>5}/episode:{:0>5}/memory:{:0>5}:".format(self._steps_done,
                                                     idx,
                                                     len(self._memory)))
                 sys.stdout.flush()
@@ -216,13 +216,10 @@ class TrainerDQN():
 
             while game.active():
                 # Select and perform an action
-                if not game.is_current_player_playing():
-                    game = game.skip_eliminated_player()
-                    continue
                 actions += 1
                 action, action_idx = self._select_action(game)
                 action_tensor = torch.LongTensor([action_idx])
-                game_next, reward = game.move(action)
+                game_next, reward = TrainerDQN.advance_game(game, action, agent)
 
                 # Observe states
                 state_current = torch.from_numpy(game.state())
@@ -243,6 +240,35 @@ class TrainerDQN():
         aps = actions / (time.time() - time_start)
         print(' :EOF {:.2f} action/second'.format(aps))
 
+    @staticmethod
+    def advance_game(game, action, agent):
+        """Advance a game with an action
+
+        * Play an action
+        * Advance the game using the agent
+        * Return the game pending for the same player turn _unless_ the game ends
+
+        returns <game, reward>
+        """
+        if not game.is_action_valid(action):
+            return game, -1
+
+        player_idx = game.turn_index()
+        game_current, _ = game.move(action)
+        while game_current.active() and game_current.turn_index() != player_idx:
+            if game_current.is_current_player_playing():
+                game_current, _ = game_current.move(agent.move(game_current))
+            else:
+                game_current = game_current.skip_eliminated_player()
+
+        if game_current.over():
+            if game_current.winner() == player_idx:
+                return game_current, 15
+            else:
+                return game_current, -5
+
+        return game_current, 0
+
     def _optimize_model(self):
 
         if not self._memory.full:
@@ -255,6 +281,9 @@ class TrainerDQN():
         for idx, value in enumerate(state_next_batch[:, 0]):
             if value != -1:
                 indices_normal.append(idx)
+        if len(indices_normal) < 1:
+            # escape on randomly empty set
+            return
 
         # Compute a mask of non-final states and concatenate the batch elements
         mask_normal = torch.LongTensor(indices_normal)
@@ -310,23 +339,6 @@ class TrainerDQN():
         """Resolve a game's current state to a model input state"""
         return torch.FloatTensor(game._board[0:6] + game._board[7:13]).div(48)
 
-    @staticmethod
-    def game_to_reward(score_previous, game, player_two_acted):
-        """Reward based on the past score. Always player 1 POV"""
-        score = game.score()
-        if game.over():
-            reward = 100 if score[0] > score[1] else -100
-        else:
-            # penalize waiting
-            # penalize less if keeping turn
-            # earning score is worth something
-            # letting score is penalized
-            reward = 0 + \
-                (-1 if player_two_acted else 0) + \
-                0.5 * (score[0] - score_previous[0])
-            # reward = 0
-
-        return torch.Tensor([reward])
 
     @staticmethod
     def action_tensor_to_int(action):
