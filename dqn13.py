@@ -21,19 +21,27 @@ path_output = "temp.model.remove"
 class Net(nn.Module):
     def __init__(self):
         super(Net, self).__init__()
-        self.fc1 = nn.Linear(24, 128)
-        self.tanh = nn.Tanh()
-        self.fc2 = nn.Linear(128, 15)
+        self.act = nn.Tanh()
+        self.fc1 = nn.Linear(24, 256)
+        self.fc2 = nn.Linear(256, 1024)
+        self.fc3 = nn.Linear(1024, 256)
+        self.fc4 = nn.Linear(256, 15)
         self.init_weights()
 
     def init_weights(self):
         self.fc1.weight.data.uniform_(-0.1, 0.1)
         self.fc2.weight.data.uniform_(-0.1, 0.1)
+        self.fc3.weight.data.uniform_(-0.1, 0.1)
+        self.fc4.weight.data.uniform_(-0.1, 0.1)
 
     def forward(self, x):
         out = self.fc1(x)
-        out = self.tanh(out)
+        out = self.act(out)
         out = self.fc2(out)
+        out = self.act(out)
+        out = self.fc3(out)
+        out = self.act(out)
+        out = self.fc4(out)
         return out
 
 
@@ -166,18 +174,18 @@ def deep_q_learning(num_episodes=10, batch_size=100,
 
             state = next_state
 
-        if len(memory) >= batch_size and (i_episode + 1) % 10 == 0:
-            print('episode: %d, time: %d, loss: %.4f' %
-                  (i_episode, t, loss.data[0]))
+        if len(memory) >= batch_size and i_episode % 50 == 0:
             torch.save(net.state_dict(), path_output)
             win_rate_v_random = Arena.compare_agents_float(
                 lambda seed: AgentDQN(path_output, seed + i_episode),
                 lambda seed: AgentRandom(seed + i_episode),
                 800)
-            msg = " Episode {: >3} | VsRandom: {: >4}%".format(
+            msg = " Episode {: >3} | VsRandom: {: >4}% | Loss {: >4}".format(
                 i_episode,
-                round(win_rate_v_random * 100, 2)
+                round(win_rate_v_random * 100, 2),
+                loss.data[0]
             )
+            print(msg)
 
 print("Start")
 deep_q_learning(5000)
