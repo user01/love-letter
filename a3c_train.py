@@ -63,7 +63,7 @@ def train(rank, args, shared_model, dtype):
             action = prob.multinomial().data
             log_prob = log_prob.gather(1, Variable(action))
 
-            state, reward, done, _ = env.step(action.cpu().numpy())
+            state, reward, done, _ = env.step(action.cpu().numpy()[0][0])
             done = done or episode_length >= args.max_episode_length
 
             if done:
