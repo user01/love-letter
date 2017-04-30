@@ -1,3 +1,4 @@
+import datetime
 import time
 import pickle
 from datetime import date
@@ -16,24 +17,62 @@ from tensorboard_logger import configure, log_value
 
 from loveletter.env import LoveLetterEnv
 from loveletter.agents.random import AgentRandom
+from loveletter.agents.agent import Agent
+from loveletter.arena import Arena
 
 
+class AgentA3C(Agent):
+    '''Agent which leverages Actor Critic Learning'''
 
-# api_key = ''
-# with open('api_key.json', 'r+') as api_file:
-#     api_key = json.load(api_file)['api_key']
+    def __init__(self,
+                 model_path,
+                 dtype,
+                 seed=451):
+        self._seed = seed
+        self._idx = 0
+        self._dtype = dtype
+        self.env = LoveLetterEnv(AgentRandom(seed), seed)
+        state = self.env.reset()
+
+        self._model = ActorCritic(
+            state.shape[0], self.env.action_space).type(dtype)
+        self._model.load_state_dict(torch.load(model_path))
+
+    def _move(self, game):
+        '''Return move which ends in score hole'''
+        assert game.active()
+
+        state = self.env.force(game)
+        state = torch.from_numpy(state).type(self._dtype)
+        # state = self.env.
+        cx = Variable(torch.zeros(1, 256).type(self._dtype), volatile=True)
+        hx = Variable(torch.zeros(1, 256).type(self._dtype), volatile=True)
+
+
+        value, logit, (hx, cx) = self._model(
+            (Variable(state.unsqueeze(0), volatile=True), (hx, cx)))
+        prob = F.softmax(logit)
+        # print(prob.size())
+        # action = prob.max(1)[1].data.cpu().numpy()
+        scores = prob.data.cpu().tolist()[0]
+
+        player_action = self.env.action_by_score(scores, game)
+        return player_action[0]
+
+
 
 evaluation_episodes = 100
+
 
 def test(rank, args, shared_model, dtype):
     test_ctr = 0
     torch.manual_seed(args.seed + rank)
 
-    #set up logger
-    timestring = str(date.today()) + '_' + time.strftime("%Hh-%Mm-%Ss", time.localtime(time.time()))
+    # set up logger
+    timestring = str(date.today()) + '_' + \
+        time.strftime("%Hh-%Mm-%Ss", time.localtime(time.time()))
     run_name = args.save_name + '_' + timestring
     configure("logs/run_" + run_name, flush_secs=5)
-
 
     env = LoveLetterEnv(AgentRandom(args.seed + rank), args.seed + rank)
     env.seed(args.seed + rank)
@@ -49,7 +88,6 @@ def test(rank, args, shared_model, dtype):
     done = True
 
     start_time = time.time()
-
 
     episode_length = 0
     while True:
@@ -84,8 +122,20 @@ def test(rank, args, shared_model, dtype):
 
             if reward_sum >= max_reward:
                 # pickle.dump(shared_model.state_dict(), open(args.save_name + '_max' + '.p', 'wb'))
-                torch.save(shared_model.state_dict(), args.save_name + '_max')
+                path_output = args.save_name + '_max'
+                torch.save(shared_model.state_dict(), path_output)
                 max_reward = reward_sum
+
+                win_rate_v_random = Arena.compare_agents_float(
+                    lambda seed: AgentA3C(path_output, dtype, args.seed),
+                    lambda seed: AgentRandom(args.seed),
+                    800)
+                msg = " {} | VsRandom: {: >4}%".format(
+                    datetime.datetime.now().strftime("%c"),
+                    round(win_rate_v_random * 100, 2)
+                )
+                print(msg)
+                log_value('Win Rate vs Random', win_rate_v_random, test_ctr)
 
             reward_sum = 0
             episode_length = 0
@@ -98,7 +148,8 @@ def test(rank, args, shared_model, dtype):
             if not args.evaluate:
                 time.sleep(60)
             elif test_ctr == evaluation_episodes:
-                # Ensure the environment is closed so we can complete the submission
+                # Ensure the environment is closed so we can complete the
+                # submission
                 env.close()
                 # gym.upload('monitor/' + run_name, api_key=api_key)
 

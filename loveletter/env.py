@@ -63,6 +63,11 @@ class LoveLetterEnv(gym.Env):
         self._game = Game.new(4, self.np_random.random_integers(5000000))
         return self._game.state()
 
+    def force(self, game):
+        """Force the environment to a certain game state"""
+        self._self = game
+        return game.state()
+
     @staticmethod
     def advance_game(game, action, agent):
         """Advance a game with an action
@@ -104,7 +109,7 @@ class LoveLetterEnv(gym.Env):
         return (action, score, idx)
         """
         if len(scores) != 15:
-            raise Exception("Invalid scores length")
+            raise Exception("Invalid scores length: {}".format(len(scores)))
         game = self._game if game is None else game
 
         assert game.active()
