@@ -148,8 +148,14 @@ def deep_q_learning(num_episodes=10, batch_size=100,
             # Restore transition in memory
             memory.push([state, action, reward, next_state])
 
-            if len(memory) >= batch_size:
-                # Sample mini-batch transitions from memory
+            if done:
+                break
+
+            state = next_state
+
+        if i_episode % 500 == 0 and len(memory) >= batch_size:
+            for _ in range(batch_size):
+                    # Sample mini-batch transitions from memory
                 batch = memory.sample(batch_size)
                 state_batch = np.vstack([trans[0] for trans in batch])
                 action_batch = np.vstack([trans[1] for trans in batch])
@@ -169,18 +175,14 @@ def deep_q_learning(num_episodes=10, batch_size=100,
                 loss.backward()
                 optimizer.step()
 
-            if done:
-                break
+        if i_episode % 1000 == 0:
 
-            state = next_state
-
-        if len(memory) >= batch_size and i_episode % 50 == 0:
             torch.save(net.state_dict(), path_output)
             win_rate_v_random = Arena.compare_agents_float(
                 lambda seed: AgentDQN(path_output, seed + i_episode),
                 lambda seed: AgentRandom(seed + i_episode),
                 800)
-            msg = " Episode {: >3} | VsRandom: {: >4}% | Loss {: >4}".format(
+            msg = " Episode {: >6} | VsRandom: {: >4}% | Loss {: >4}".format(
                 i_episode,
                 round(win_rate_v_random * 100, 2),
                 loss.data[0]
@@ -188,4 +190,4 @@ def deep_q_learning(num_episodes=10, batch_size=100,
             print(msg)
 
 print("Start")
-deep_q_learning(5000)
+deep_q_learning(500000)
