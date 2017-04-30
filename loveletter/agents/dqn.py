@@ -256,13 +256,15 @@ class TrainerDQN():
 
         player_idx = game.player_turn()
         game_current, _ = game.move(action)
-        while game_current.active() and game_current.player_turn() != player_idx:
-            if game_current.is_current_player_playing():
+        while game_current.active():
+            if not game_current.is_current_player_playing():
+                game_current = game_current.skip_eliminated_player()
+            elif game_current.player_turn() != player_idx:
                 game_current, _ = game_current.move(agent.move(game_current))
             else:
-                game_current = game_current.skip_eliminated_player()
+                break
 
-        # print("Round", game.round(), '->', game_current.round())
+        # print("Round", game.round(), '->', game_current.round(), ':', 'OVER' if game_current.over() else 'RUNN')
 
         if game_current.over():
             if game_current.winner() == player_idx:
@@ -290,24 +292,23 @@ class TrainerDQN():
         # will save us on temporarily changing the model parameters'
         # requires_grad to False!
         if len(batch.next_state) < 1:
-            non_final_next_states = ModelDQN.Variable(torch.cat([s for s in batch.next_state
-                                                        if s is not None]),
-                                                        volatile=True)
-            print("NONSKIP")
-        else:
             print("SKIP")
             return
-        state_batch = ModelDQN.Variable(torch.cat(batch.state))
-        action_batch = ModelDQN.Variable(torch.cat(batch.action))
-        reward_batch = ModelDQN.Variable(torch.cat(batch.reward))
+        non_final_next_states = ModelDQN.Variable(torch.stack([s for s in batch.next_state
+                                                    if s is not None]),
+                                                    volatile=True)
+        state_batch = ModelDQN.Variable(torch.stack(batch.state))
+        action_batch = ModelDQN.Variable(torch.stack(batch.action))
+        reward_batch = ModelDQN.Variable(torch.stack(batch.reward))
 
         # Compute Q(s_t, a) - the model computes Q(s_t), then we select the
         # columns of actions taken
-        state_action_values = model(state_batch).gather(1, action_batch)
+        res = self._model(state_batch)
+        state_action_values = res.gather(1, action_batch)
 
         # Compute V(s_{t+1}) for all next states.
-        next_state_values = Variable(torch.zeros(self._BATCH_SIZE))
-        next_state_values[non_final_mask] = model(non_final_next_states).max(1)[0]
+        next_state_values = ModelDQN.Variable(torch.zeros(self._BATCH_SIZE))
+        next_state_values[non_final_mask] = self._model(non_final_next_states).max(1)[0]
         # Now, we don't want to mess up the loss with a volatile flag, so let's
         # clear it. After this, we'll just end up with a Variable that has
         # requires_grad=False
@@ -319,11 +320,11 @@ class TrainerDQN():
         loss = F.smooth_l1_loss(state_action_values, expected_state_action_values)
 
         # Optimize the model
-        optimizer.zero_grad()
+        self._optimizer.zero_grad()
         loss.backward()
-        for param in model.parameters():
-            param.grad.data.clamp_(-1, 1)
-        optimizer.step()
+        # for param in self._model.parameters():
+        #     param.grad.data.clamp_(-1, 1)
+        self._optimizer.step()
 
 
     def _select_action(self, game):
