@@ -125,7 +125,7 @@ class LoveLetterEnv(gym.Env):
         return action
 
     def action_from_index(self, action_index, game=None):
-        """Returns valid (idx, actions) based on a current game"""
+        """Returns valid action based on index and game"""
         game = self._game if game is None else game
 
         action_candidates = self.actions_set(game)
