@@ -99,3 +99,4 @@ arena.results.csv
 
 runs/*
 models/*
+logs/*
