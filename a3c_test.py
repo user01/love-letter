@@ -50,7 +50,6 @@ class AgentA3C(Agent):
         cx = Variable(torch.zeros(1, 256).type(self._dtype), volatile=True)
         hx = Variable(torch.zeros(1, 256).type(self._dtype), volatile=True)
 
-
         value, logit, (hx, cx) = self._model(
             (Variable(state.unsqueeze(0), volatile=True), (hx, cx)))
         prob = F.softmax(logit)
@@ -94,6 +93,7 @@ def test(rank, args, shared_model, dtype):
     state = torch.from_numpy(state).type(dtype)
     reward_sum = 0
     max_reward = -99999999
+    max_winrate = 0
     rewards_recent = deque([], 100)
     done = True
 
@@ -123,10 +123,11 @@ def test(rank, args, shared_model, dtype):
         if done:
             rewards_recent.append(reward_sum)
             rewards_recent_avg = sum(rewards_recent) / len(rewards_recent)
-            print("Time {}, episode reward {: >4}, episode length {: >2}, average reward {:0.2f}".format(
-                time.strftime("%Hh %Mm %Ss",
-                              time.gmtime(time.time() - start_time)),
-                reward_sum, episode_length, rewards_recent_avg))
+            print(
+                "{} | Episode Reward {: >4}, Length {: >2} | Avg Reward {:0.2f}".format(
+                    time.strftime("%Hh %Mm %Ss",
+                                  time.gmtime(time.time() - start_time)),
+                    reward_sum, episode_length, rewards_recent_avg))
 
             # if not stuck or args.evaluate:
             log_value('Reward', reward_sum, test_ctr)
@@ -137,7 +138,8 @@ def test(rank, args, shared_model, dtype):
                 # pickle.dump(shared_model.state_dict(), open(args.save_name + '_max' + '.p', 'wb'))
                 path_output = args.save_name + '_max'
                 torch.save(shared_model.state_dict(), path_output)
-                path_now = "{}_{}".format(args.save_name, datetime.datetime.now().isoformat())
+                path_now = "{}_{}".format(
+                    args.save_name, datetime.datetime.now().isoformat())
                 torch.save(shared_model.state_dict(), path_now)
                 max_reward = reward_sum
 
@@ -151,6 +153,11 @@ def test(rank, args, shared_model, dtype):
                 )
                 print(msg)
                 log_value('Win Rate vs Random', win_rate_v_random, test_ctr)
+                if win_rate_v_random > max_winrate:
+                    print("Found superior model at {}".format(datetime.datetime.now().isoformat()))
+                    torch.save(shared_model.state_dict(), "{}_{}_best_{}".format(
+                        args.save_name, datetime.datetime.now().isoformat(), win_rate_v_random))
+                    max_winrate = win_rate_v_random
 
             reward_sum = 0
             episode_length = 0
