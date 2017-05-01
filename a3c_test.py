@@ -3,6 +3,7 @@ import time
 import pickle
 from datetime import date
 import json
+from collections import deque
 
 import torch
 import torch.nn.functional as F
@@ -85,6 +86,7 @@ def test(rank, args, shared_model, dtype):
     state = torch.from_numpy(state).type(dtype)
     reward_sum = 0
     max_reward = -99999999
+    rewards_recent = deque([], 100)
     done = True
 
     start_time = time.time()
@@ -111,24 +113,29 @@ def test(rank, args, shared_model, dtype):
         reward_sum += reward
 
         if done:
-            print("Time {}, episode reward {}, episode length {}".format(
+            rewards_recent.append(reward_sum)
+            rewards_recent_avg = sum(rewards_recent) / len(rewards_recent)
+            print("Time {}, episode reward {: >4}, episode length {: >2}, average reward {:0.2f}".format(
                 time.strftime("%Hh %Mm %Ss",
                               time.gmtime(time.time() - start_time)),
-                reward_sum, episode_length))
+                reward_sum, episode_length, rewards_recent_avg))
 
             # if not stuck or args.evaluate:
             log_value('Reward', reward_sum, test_ctr)
+            log_value('Reward Average', rewards_recent_avg, test_ctr)
             log_value('Episode length', episode_length, test_ctr)
 
             if reward_sum >= max_reward:
                 # pickle.dump(shared_model.state_dict(), open(args.save_name + '_max' + '.p', 'wb'))
                 path_output = args.save_name + '_max'
                 torch.save(shared_model.state_dict(), path_output)
+                path_now = "{}_{}".format(args.save_name, datetime.datetime.now().isoformat())
+                torch.save(shared_model.state_dict(), path_now)
                 max_reward = reward_sum
 
                 win_rate_v_random = Arena.compare_agents_float(
-                    lambda seed: AgentA3C(path_output, dtype, args.seed),
-                    lambda seed: AgentRandom(args.seed),
+                    lambda seed: AgentA3C(path_output, dtype, seed),
+                    lambda seed: AgentRandom(seed),
                     800)
                 msg = " {} | VsRandom: {: >4}%".format(
                     datetime.datetime.now().strftime("%c"),
