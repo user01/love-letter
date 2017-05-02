@@ -1,22 +1,20 @@
+"""Kick off for training A3C agent training"""
+
 import argparse
-import pickle
 
 import torch
 import torch.multiprocessing as _mp
 mp = _mp.get_context('spawn')
 
-import torch.nn as nn
-import torch.nn.functional as F
-import gym
 
 from loveletter.env import LoveLetterEnv
 from loveletter.arena import Arena
 from loveletter.agents.random import AgentRandom
 from loveletter.agents.agent import Agent
 
-from a3c_model import ActorCritic
-from a3c_train import train
-from a3c_test import test
+from loveletter.trainers.a3c_model import ActorCritic
+from loveletter.trainers.a3c_train import train
+from loveletter.trainers.a3c_test import test
 
 # Based on
 # https://github.com/pytorch/examples/tree/master/mnist_hogwild
