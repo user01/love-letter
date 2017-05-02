@@ -1,10 +1,13 @@
 
 import argparse
 import csv
+import os
+
+import torch
 
 from loveletter.agents.random import AgentRandom
 from loveletter.arena import Arena
-
+from loveletter.agents.a3c import AgentA3C
 
 PARSER = argparse.ArgumentParser(
     description='Run the arena with available agents')
@@ -15,12 +18,16 @@ PARSER.add_argument('--output', type=str, default='arena.results.csv',
 ARGS = PARSER.parse_args()
 
 print('Starting arena')
+A3C_PATH = os.path.join("models", "nightly_2017-05-01T13:34:44.032240_best_0.4675")
+dtype = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor
+
 
 ARENA = Arena([
     # Place agents in this list as created
     # first in the tuple is the readable name
     # second is a lambda that ONLY takes a random seed. This can be discarded
     # if the the Agent does not require a seed
+    ("A3C", lambda seed: AgentA3C(A3C_PATH, dtype, seed)),
     ("Random", lambda seed: AgentRandom(seed))
 ], 500)
 
