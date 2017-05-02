@@ -18,7 +18,7 @@ PARSER.add_argument('--output', type=str, default='arena.results.csv',
 ARGS = PARSER.parse_args()
 
 print('Starting arena')
-A3C_PATH = os.path.join("models", "nightly_2017-05-01T13:34:44.032240_best_0.4675")
+A3C_PATH = os.path.join("models", "stated_2017-05-01T22:59:33.510476_best_0.45875")
 dtype = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor
 
 
