@@ -8,27 +8,43 @@ from loveletter.card import Card
 from loveletter.player import PlayerAction, PlayerActionTools
 from loveletter.tests.test_games import TestGames
 
+
 class TestRemainingCards(unittest.TestCase):
     """Love Letter Games"""
 
-    def test_remaining_cards(self):
-        game = TestGames.replay(1, [1, 1, 3, 0, 4, 1, 0, 0, 1, 1, 3, 0, 1, 2,
-        6, 0, 7, 0, 0, 0, 1, 2, 2, 0, 8, 2, 0, 0, 1, 1, 5, 0, 2, 1, 0, 0, 5, 0,
-        0, 0])
-        x = game.remaining_cards()
-        self.assertEqual(len(x), 8)
-        self.assertEqual(sum(x), 6.3)
-        self.assertListEqual(list(x), [0.8, 1., 0.5, 1., 1., 1., 1., 0.])
+    def test_consumed_cards(self):
+        """Test if consumed cards is listed properly"""
+        game = TestGames.replay(9, [3, 1, 0, 0])
+        consumed_cards = game.consumed_cards()
+        self.assertEqual(len(consumed_cards), 8)
 
-    def test_state(self):
-        game = TestGames.replay(1, [1, 1, 3, 0, 4, 1, 0, 0, 1, 1, 3, 0, 1, 2,
-        6, 0, 7, 0, 0, 0, 1, 2, 2, 0, 8, 2, 0, 0, 1, 1, 5, 0, 2, 1, 0, 0, 5, 0,
-        0, 0])
-        x = game.state()
-        self.assertEqual(len(x), 24)
-        self.assertEqual(sum(x), 8.3)
-        self.assertListEqual(list(x), [0., 0., 0., 0., 0., 0., 0., 1., 0., 1.,
-        0., 0., 0., 0., 0., 0., 0.8, 1., 0.5, 1., 1., 1., 1., 0.])
+        self.assertListEqual(list(consumed_cards),
+                             [2 / 5,  # guards
+                              0 / 2,  # priest
+                              1 / 2,  # baron
+                              0 / 2,  # handmaid
+                              1 / 2,  # prince
+                              0 / 1,  # king
+                              0 / 1,  # countess
+                              0 / 1])  # princess
+
+    def test_consumed_cards_longer(self):
+        """Test if consumed cards is listed properly in a longer game"""
+        game = TestGames.replay(9, [3, 1, 0, 0, 1, 2, 2, 0, 6, 3,
+                                    0, 0, 1, 2, 6, 0, 0, 0, 0, 0])
+        consumed_cards = game.consumed_cards()
+        self.assertEqual(len(consumed_cards), 8)
+
+        self.assertListEqual(list(consumed_cards),
+                             [3 / 5,  # guards
+                              0 / 2,  # priest
+                              1 / 2,  # baron
+                              1 / 2,  # handmaid
+                              1 / 2,  # prince
+                              1 / 1,  # king
+                              0 / 1,  # countess
+                              0 / 1])  # princess
+
 
 if __name__ == '__main__':
     unittest.main()

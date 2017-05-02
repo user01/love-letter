@@ -124,6 +124,7 @@ class Game():
     def state_hand(self):
         """
         Grab whats in players hand and record it as a one hot encoded array.
+        The result is a 16 length binary one hot encoded array
         """
         # whats in hand
         card_number1 = self.player().hand_card
@@ -139,38 +140,28 @@ class Game():
         card1[cardnumbers[0] - 1] = 1
         card2[cardnumbers[1] - 1] = 1
 
-        return card1, card2
+        return np.concatenate([card1, card2])
 
-    def remaining_cards(self):
+    def consumed_cards(self):
         """
         Looks at discarded cards and returns probabilities of outstanding cards.
         """
-        # starting array
-        starting_cards = np.ones(8)
 
-        # weights array
-        weights_of_cards = np.asarray(
-            [1 / 5, 1 / 2, 1 / 2, 1 / 2, 1 / 2, 1, 1, 1])
+        cards_discarded = np.array([Game.player_to_discards(
+            player) for player in self.players()]).flatten()
 
-        # seen cards
-        seen_cards = np.zeros(8)
+        cards_hand = [self.player().hand_card, self.deck()[0]]
+        cards_all = np.concatenate([cards_discarded, cards_hand])
 
-        # grab discarded cards from each player
-        cards = []
-        for action in self.player().actions:
-            if not PlayerActionTools.is_blank(action):
-                cards.append(action[0])
+        card_bins = np.bincount(cards_all, minlength=9)[1:9]
+        card_fractions = card_bins / Card.counts
 
-        # loop through discarded cards adding them to the seen cards array
-        for card in cards:
-            # array is zero indexed but card values are one indexed
-            seen_cards[card - 1] += 1
+        return card_fractions
 
-        if sum(seen_cards) > 0:
-            seen_cards = seen_cards * weights_of_cards
-        else:
-            seen_cards = np.zeros(8)
-        return starting_cards - seen_cards
+    @staticmethod
+    def player_to_discards(player):
+        """Returns a list of all cards discarded by player"""
+        return [action.discard for action in player.actions]
 
     def state(self):
         """
@@ -178,7 +169,7 @@ class Game():
 
         returns numpy float 1d of length 24
         """
-        return np.concatenate([self.state_hand()[0], self.state_hand()[1], self.remaining_cards()])
+        return np.concatenate([self.state_hand(), self.consumed_cards()])
 
     def _reward(self, game, action):
         """
