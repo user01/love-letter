@@ -38,6 +38,7 @@ class LoveLetterEnv(gym.Env):
             seed) if agent_other is None else agent_other
         self._seed(seed)
         self._reset()
+        self._game = Game.new(4, self.np_random.random_integers(5000000))
 
     def _seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
@@ -65,7 +66,7 @@ class LoveLetterEnv(gym.Env):
 
     def force(self, game):
         """Force the environment to a certain game state"""
-        self._self = game
+        self._game = game
         return game.state()
 
     @staticmethod
