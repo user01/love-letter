@@ -9,7 +9,7 @@ Love Letter is a turn based card game where a player wins by eliminating the oth
 
 ## Agents
 
-![Current Agent Performance](assets/performance_results.play.png "Current Agent Performance")
+![Current Agent Performance](assets/performance_results.png "Current Agent Performance")
 
 Numbers match the win rate of the agent on the bottom row against the opponent agent in the left column. Darker colors are better - the best agent has the column of darkest colors. Note these are all based on four player games, so a random agent will win 25% of the time against three other random agents.
 
