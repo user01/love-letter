@@ -79,9 +79,21 @@ class Game():
                 return idx
         return -1
 
-    def _player(self):
+    def player(self):
         """Returns the current player"""
         return self._players[self.player_turn()]
+
+    def opponents(self):
+        """Returns the opposing players"""
+        return [player for idx, player in enumerate(self._players)
+                if idx != self.player_turn() and
+                PlayerTools.is_playing(player)]
+
+    def opponent_turn(self):
+        """Returns the opposing players indices"""
+        return [idx for idx, player in enumerate(self._players)
+                if idx != self.player_turn() and
+                PlayerTools.is_playing(player)]
 
     def cards_left(self):
         """
@@ -101,7 +113,7 @@ class Game():
 
     def is_current_player_playing(self):
         """True if the current player has not been eliminated"""
-        return PlayerTools.is_playing(self._player())
+        return PlayerTools.is_playing(self.player())
 
     def skip_eliminated_player(self, throw=False):
         """If the current player is eliminated, skip to next"""
@@ -112,9 +124,10 @@ class Game():
     def state_hand(self):
         """
         Grab whats in players hand and record it as a one hot encoded array.
+        The result is a 16 length binary one hot encoded array
         """
         # whats in hand
-        card_number1 = self._player().hand_card
+        card_number1 = self.player().hand_card
         card_number2 = self.deck()[0]
 
         cardnumbers = [card_number1, card_number2]
@@ -127,43 +140,36 @@ class Game():
         card1[cardnumbers[0] - 1] = 1
         card2[cardnumbers[1] - 1] = 1
 
-        return card1, card2
+        return np.concatenate([card1, card2])
 
-    def remaining_cards(self):
+    def consumed_cards(self):
         """
         Looks at discarded cards and returns probabilities of outstanding cards.
         """
-        # starting array
-        starting_cards = np.ones(8)
 
-        # weights array
-        weights_of_cards = np.asarray([1 / 5, 1 / 2, 1 / 2, 1 / 2, 1 / 2, 1, 1, 1])
+        cards_discarded = np.array([Game.player_to_discards(
+            player) for player in self.players()]).flatten()
 
-        # seen cards
-        seen_cards = np.zeros(8)
+        cards_hand = [self.player().hand_card, self.deck()[0]]
+        cards_all = np.concatenate([cards_discarded, cards_hand])
 
-        # grab discarded cards from each player
-        cards = []
-        for action in self._player().actions:
-            if not PlayerActionTools.is_blank(action):
-                cards.append(action[0])
+        card_bins = np.bincount(cards_all, minlength=9)[1:9]
+        card_fractions = card_bins / Card.counts
 
-        # loop through discarded cards adding them to the seen cards array
-        for card in cards:
-            # array is zero indexed but card values are one indexed
-            seen_cards[card - 1] += 1
+        return card_fractions
 
-        if sum(seen_cards) > 0:
-            seen_cards = seen_cards * weights_of_cards
-        else:
-            seen_cards = np.zeros(8)
-        return starting_cards - seen_cards
+    @staticmethod
+    def player_to_discards(player):
+        """Returns a list of all cards discarded by player"""
+        return [action.discard for action in player.actions]
 
     def state(self):
         """
         Combines player hand and remaining cards into one array.
+
+        returns numpy float 1d of length 24
         """
-        return np.concatenate([self.state_hand()[0], self.state_hand()[1], self.remaining_cards()])
+        return np.concatenate([self.state_hand(), self.consumed_cards()])
 
     def _reward(self, game, action):
         """
@@ -197,7 +203,7 @@ class Game():
         if action.discard == Card.noCard:
             return Game(self.deck(), self.players(), self.turn_index() + 1)
 
-        player = self._player()
+        player = self.player()
         player_hand = [player.hand_card, self._deck[0]]
         player_hand_new = Game.new_hand_card(action.discard, player_hand)
         deck_new = self._deck[1:]
@@ -211,7 +217,7 @@ class Game():
             return self._move_priest(action, player_hand_new, deck_new)
 
         # updated players for the next turn
-        player = PlayerTools.move(self._player(), player_hand_new, action)
+        player = PlayerTools.move(self.player(), player_hand_new, action)
         current_players = Game._set_player(
             self._players, player, self.player_turn())
 
@@ -263,7 +269,7 @@ class Game():
             action.discard, action.player_target, action.guess, player_targets_card)
 
         player = PlayerTools.move(
-            self._player(), player_hand_new, action_updated)
+            self.player(), player_hand_new, action_updated)
         current_players = Game._set_player(
             self._players, player, self.player_turn())
 
@@ -286,7 +292,7 @@ class Game():
                     current_players, player_target, action.player_target)
         else:
             # player is eliminated
-            player = PlayerTools.force_discard(self._player(), player_hand_new)
+            player = PlayerTools.force_discard(self.player(), player_hand_new)
             player = PlayerTools.force_discard(player)
             current_players = Game._set_player(
                 current_players, player, self.player_turn())
@@ -333,7 +339,7 @@ class Game():
 
     def _move_princess(self, dealt_card, new_deck):
         """Handle a princess action into a new game state"""
-        player = PlayerTools.force_discard(self._player(), dealt_card)
+        player = PlayerTools.force_discard(self.player(), dealt_card)
         player = PlayerTools.force_discard(player)
         current_players = Game._set_player(
             self._players, player, self.player_turn())
@@ -341,7 +347,7 @@ class Game():
 
     def is_action_valid(self, action):
         """Tests if an action is valid given the current game state"""
-        player = self._player()
+        player = self.player()
 
         # if player is out, only valid action is no action
         if player.hand_card == Card.noCard:

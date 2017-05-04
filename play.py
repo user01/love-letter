@@ -20,6 +20,9 @@ PARSER.add_argument('--replay', type=str, default="",
 
 ARGS = PARSER.parse_args()
 
+# python play.py --seed 1 --replay 1,1,3,0,4,1,0,0,1,1,3,0,1,2,6,0,7,0,0,0,1,2,2,0,8,2,0,0,1,1,5,0,2,1,0,0
+# python play.py --seed 9 --replay 3,1,0,0,1,2,2,0,6,3,0,0,1,2,6,0
+
 # def actions_to_str(actions):
 #     np_arr = [PlayerActionTools.to_np_many]
 
@@ -71,7 +74,7 @@ def play(seed, previous_actions):
                 print("  What card to play?")
                 action = get_action()
             actions.append(action)
-            game = game.move(action)
+            game, _ = game.move(action)
         except ValueError:
             print("Invalid move - Exit with Ctrl-C")
 
