@@ -8,6 +8,7 @@ import torch
 from loveletter.agents.random import AgentRandom
 from loveletter.arena import Arena
 from loveletter.agents.a3c import AgentA3C
+from loveletter.agents.sarsa_lambda import AgentSarsaLambda
 
 PARSER = argparse.ArgumentParser(
     description='Run the arena with available agents')
@@ -27,7 +28,7 @@ ARENA = Arena([
     # first in the tuple is the readable name
     # second is a lambda that ONLY takes a random seed. This can be discarded
     # if the the Agent does not require a seed
-    ("A3C", lambda seed: AgentA3C(A3C_PATH, dtype, seed)),
+    ("SarsaLambda", lambda seed: AgentSarsaLambda(seed)),
     ("Random", lambda seed: AgentRandom(seed))
 ], 500)
 

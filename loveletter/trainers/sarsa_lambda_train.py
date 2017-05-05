@@ -10,7 +10,7 @@ import random
 from collections import namedtuple
 import os.path
 
-num_iterations = 5000
+num_iterations = 100
 num_players = 2
 epsilon = [0.1, 0.2]
 alpha = 0.5
@@ -50,29 +50,29 @@ def action_idx_to_action(idx, t):
         return PlayerAction(discard = 2, player_target = opponent, guess = 0, revealed_card = 0)
     if idx == 8:
         return PlayerAction(discard = 3, player_target = opponent, guess = 0, revealed_card = 0)
-    if idx == 9:
+    if idx == 12: #handmaiden
         return PlayerAction(discard = 4, player_target = player, guess = 0, revealed_card = 0)
-    if idx == 10:
+    if idx == 11: #prince me
         return PlayerAction(discard = 5, player_target = player, guess = 0, revealed_card = 0)
-    if idx == 11:
+    if idx == 10: #prince you
         return PlayerAction(discard = 5, player_target = opponent, guess = 0, revealed_card = 0)
-    if idx == 12:
+    if idx == 9: #king you
         return PlayerAction(discard = 6, player_target = opponent, guess = 0, revealed_card = 0)
-    if idx == 13:
+    if idx == 13: #countess
         return PlayerAction(discard = 7, player_target = player, guess = 0, revealed_card = 0)
-    if idx == 14:
+    if idx == 14: #princess
         return PlayerAction(discard = 8, player_target = player, guess = 0, revealed_card = 0)
-
+        # sorry this is mixed up to match code in env.py
 
 
 # 2nd for each available action, of which there are 15
 # 1st for which player, 0 for player 0, 1 for player 1
 # 3rd for left hand card, 3rd for right hand card
 # rest of numbers show how much 
-Q = np.random.rand(num_players, 15, 8, 8, 6, 3, 3, 3, 3, 2, 2, 2)
+Q = np.zeros((num_players, 15, 8, 8, 6, 3, 3, 3, 3, 2, 2, 2))
 
-if os.path.exists("loveletter/models/sarsa_lambda_Q.npz"):
-    with np.load('loveletter/models/sarsa_lambda_Q.npz') as data:
+if os.path.exists("models/sarsa_lambda_Q.npz"):
+    with np.load('models/sarsa_lambda_Q.npz') as data:
         Q[0] = data['Q']
         Q[1] = data['Q']
 
@@ -144,5 +144,5 @@ for i in range(num_iterations):
     Q[0] = np.divide(np.add(Q[0], Q[1]), 2)
     Q[1] = Q[0]
 
-np.savez_compressed("loveletter/models/sarsa_lambda_Q.npz", Q=Q[0])
+np.savez_compressed("models/sarsa_lambda_Q.npz", Q=Q[0])
 print("Games over. Q saved.")
