@@ -2,6 +2,7 @@ import numpy as np
 from loveletter.env import LoveLetterEnv
 from loveletter.agents.agent import Agent
 from loveletter.agents.random import AgentRandom
+import random
 
 class AgentSarsaLambda(Agent):
     '''Agent which leverages Sarsa Lambda Learning'''
@@ -13,22 +14,25 @@ class AgentSarsaLambda(Agent):
 
         self._seed = seed
         self._idx = 0
-        self._dtype = dtype
-        self.env = LoveLetterEnv(AgentRandom(seed), seed)        
+        self.env = LoveLetterEnv(AgentRandom(seed), seed)     
+
+    def _nn_to_ss(self, state):
+        lh = np.argmax(state[0:8])
+        rh = np.argmax(state[8:16])
+        cards = np.multiply(state[16:24], [5, 2, 2, 2, 2, 1, 1, 1]).astype(int)
+
+        return np.concatenate(([lh, rh], cards))   
 
     def _move(self, game):
         assert game.active()
 
-        S = nn_to_ss(game.state())
+        S = self._nn_to_ss(game.state())
 
-        if (np.random.random() > epsilon):
-            A = np.argmax(self._Q[(...) + tuple(S)])
-        else:
-            A = np.random.randint(15)
+        A = np.argmax(self._Q[:, tuple(S)])
 
         player_action = self.env.action_from_index(A, game)
+        #print(player_action)
 
-        player_action = self.env.action_from_index(action_idx, game)
         if player_action is None:
             # print("ouch")
             options = Agent.valid_actions(game, self._seed + self._idx)
@@ -41,9 +45,3 @@ class AgentSarsaLambda(Agent):
         # print("playing ", self._idx, player_action)
         return player_action
 
-    def nn_to_ss(state):
-        lh = np.argmax(state[0:8])
-        rh = np.argmax(state[8:16])
-        cards = np.multiply(state[16:24], [5, 2, 2, 2, 2, 1, 1, 1]).astype(int)
-
-        return np.concatenate(([lh, rh], cards))
