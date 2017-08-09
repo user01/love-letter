@@ -353,6 +353,10 @@ class Game():
         if player.hand_card == Card.noCard:
             return PlayerActionTools.is_blank(action)
 
+        # cannot target an invalid player
+        if not self._is_valid_player_target(action.player_target):
+            return False
+
         target_player = self._players[action.player_target]
         player_hand = [player.hand_card, self._deck[0]]
 
@@ -365,10 +369,6 @@ class Game():
         # countess must be discarded if the other card is king/prince
         if new_hand_card == Card.countess and \
                 (action.discard == Card.prince or action.discard == Card.king):
-            return False
-
-        # cannot target an invalid player
-        if not self._is_valid_player_target(action.player_target):
             return False
 
         # cannot mis-target a card
@@ -389,6 +389,9 @@ class Game():
 
     def _is_valid_player_target(self, player_target):
         """True iff the player can be targeted by an action"""
+        if player_target < 0 or player_target >= len(self._players):
+            return False
+
         return PlayerTools.is_playing(self._players[player_target])
 
     def _invalid_input(self, throw):
