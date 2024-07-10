@@ -1,3 +1,5 @@
+very impressive code.
+good knowledge about try.
 # -*- coding: utf-8 -*-
 """Simple, face up console version of game"""
 
